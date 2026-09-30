@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STAFF
+  PM
+  ADMIN
+}
+
+enum AttendanceStatus {
+  HADIR
+  SAKIT
+  IZIN
+  ALPHA
+}
+
+enum OvertimeStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  email         String   @unique
+  password_hash String
+  full_name     String
+  role          Role
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now())
+
+  // Relations
+  attendances           Attendance[] @relation("UserAttendances")
+  overriddenAttendances Attendance[] @relation("AdminOverrideAttendances")
+  overtimes             Overtime[]   @relation("UserOvertimes")
+  approvedOvertimes     Overtime[]   @relation("PMApprovedOvertimes")
+
+  @@map("users")
+}
+
+model Attendance {
+  id               String           @id @default(uuid()) @db.Uuid
+  user_id          String           @db.Uuid
+  record_date      DateTime         @db.Date
+  clock_in         DateTime         @db.Timestamp(6)
+  clock_out        DateTime?        @db.Timestamp(6)
+  duration_minutes Int?
+  status           AttendanceStatus @default(HADIR)
+  override_by      String?          @db.Uuid
+
+  user     User  @relation("UserAttendances", fields: [user_id], references: [id])
+  override User? @relation("AdminOverrideAttendances", fields: [override_by], references: [id])
+
+  @@map("attendances")
+}
+
+model Overtime {
+  id             String         @id @default(uuid()) @db.Uuid
+  user_id        String         @db.Uuid
+  request_date   DateTime       @db.Date
+  duration_hours Int
+  reason         String         @db.Text
+  status         OvertimeStatus @default(PENDING)
+  approved_by    String?        @db.Uuid
+  created_at     DateTime       @default(now())
+
+  user     User  @relation("UserOvertimes", fields: [user_id], references: [id])
+  approver User? @relation("PMApprovedOvertimes", fields: [approved_by], references: [id])
+
+  @@map("overtimes")
+}
+
+model SystemSetting {
+  key   String @id
+  value String
+
+  @@map("system_settings")
+}
