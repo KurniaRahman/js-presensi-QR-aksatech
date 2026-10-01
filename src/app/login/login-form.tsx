@@ -21,8 +21,11 @@ export function LoginForm() {
       if (res?.error) {
         setError(res.error)
       }
-    } catch (err) {
-      // Redirects will throw an error that Next.js catches internally
+    } catch (err: any) {
+      if (err?.digest?.startsWith("NEXT_REDIRECT")) {
+        throw err
+      }
+      setError("Gagal terhubung ke server. Periksa koneksi Anda.")
     } finally {
       setLoading(false)
     }

@@ -22,10 +22,6 @@ export default auth((req) => {
     return NextResponse.redirect(new URL('/forbidden', req.url))
   }
 
-  if (pathname.startsWith('/pm') && role !== 'PM' && role !== 'ADMIN') {
-    return NextResponse.redirect(new URL('/forbidden', req.url))
-  }
-
   if (pathname === '/') {
     if (role === 'ADMIN') return NextResponse.redirect(new URL('/admin', req.url))
     return NextResponse.redirect(new URL('/dashboard', req.url))

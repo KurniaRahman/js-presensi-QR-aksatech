@@ -17,7 +17,7 @@ export async function checkNetworkIp() {
     allowedIpSetting = await db.systemSetting.create({
       data: {
         key: 'OFFICE_WIFI_IP',
-        value: '192.250.1.1, ::1'
+        value: '  .0.0.1, ::1'
       }
     })
   }
@@ -27,8 +27,13 @@ export async function checkNetworkIp() {
   // x-forwarded-for kadang berisi beberapa IP jika melewati banyak proxy, kita ambil yang pertama (IP Klien)
   const clientIp = ip.split(',')[0].trim()
 
+  // Cek apakah IP klien sama persis, atau dimulai dengan prefix yang diizinkan (misal: 192.168.1.)
+  const isAllowed = allowedIps.some(allowedIp => 
+    clientIp === allowedIp || (allowedIp.endsWith('.') && clientIp.startsWith(allowedIp))
+  )
+
   return {
-    allowed: allowedIps.includes(clientIp),
+    allowed: isAllowed,
     clientIp
   }
 }

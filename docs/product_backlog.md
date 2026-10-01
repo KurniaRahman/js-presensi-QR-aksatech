@@ -37,9 +37,9 @@ Dokumen ini memecah kebutuhan sistem menjadi unit yang lebih kecil untuk dieksek
     * *When* mencoba mengakses URL /admin/reports,  
     * *Then* sistem menolak akses dan menampilkan halaman "403 Forbidden".
 
-## **EPIC 2: Modul Presensi & Keamanan Jaringan** ✅ DONE
+## **EPIC 2: Modul Presensi & Keamanan Jaringan** 📝 TODO
 
-### **2.1 User Story: Validasi Jaringan Lokal (Wi-Fi Restriction)** [x]
+### **2.1 User Story: Validasi Jaringan Lokal (Wi-Fi Restriction)** [ ]
 
 *As an Admin, I want the attendance feature to only work on the office network, so that staff cannot clock-in from home.*
 
@@ -50,7 +50,7 @@ Dokumen ini memecah kebutuhan sistem menjadi unit yang lebih kecil untuk dieksek
     * *When* pengguna membuka halaman "Scan QR",  
     * *Then* tombol kamera dinonaktifkan dan sistem menampilkan pesan "Anda harus terhubung ke Wi-Fi kantor untuk melakukan presensi."
 
-### **2.2 User Story: Scan QR (Clock-In / Clock-Out) & Cooldown** [x]
+### **2.2 User Story: Scan QR (Clock-In / Clock-Out) & Cooldown** [ ]
 
 *As a Staff, I want to scan a QR code to record my attendance, so that my work hours are tracked automatically.*
 

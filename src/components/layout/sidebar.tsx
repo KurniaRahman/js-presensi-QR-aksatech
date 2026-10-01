@@ -12,25 +12,27 @@ type NavItem = {
   icon: React.ReactNode
 }
 
-export function Sidebar({ navItems, userName }: { navItems: NavItem[], userName: string }) {
+export function Sidebar({ navItems, userName, hideMobile = false }: { navItems: NavItem[], userName: string, hideMobile?: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
 
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="md:hidden flex items-center justify-between bg-[#1F77C5] text-white p-4">
-        <div className="flex items-center gap-2">
-          <Hexagon className="h-6 w-6" />
-          <span className="font-bold text-lg tracking-wide">AKSA TECH</span>
+      {!hideMobile && (
+        <div className="md:hidden flex items-center justify-between bg-[#1F77C5] text-white p-4">
+          <div className="flex items-center gap-2">
+            <Hexagon className="h-6 w-6" />
+            <span className="font-bold text-lg tracking-wide">AKSA TECH</span>
+          </div>
+          <button onClick={() => setIsOpen(!isOpen)} className="p-2 focus:outline-none">
+            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
-        <button onClick={() => setIsOpen(!isOpen)} className="p-2 focus:outline-none">
-          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
-      </div>
+      )}
 
       {/* Overlay for mobile */}
-      {isOpen && (
+      {!hideMobile && isOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={() => setIsOpen(false)}
@@ -38,7 +40,7 @@ export function Sidebar({ navItems, userName }: { navItems: NavItem[], userName:
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#1F77C5] text-white transform transition-transform duration-300 ease-in-out flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0`}>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#1F77C5] text-white transform transition-transform duration-300 ease-in-out flex flex-col ${!hideMobile && isOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 ${hideMobile ? 'hidden md:flex' : ''}`}>
         {/* Logo Area */}
         <div className="hidden md:flex items-center gap-2 p-6">
           <Hexagon className="h-8 w-8 text-white" />
