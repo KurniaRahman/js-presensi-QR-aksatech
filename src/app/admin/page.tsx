@@ -3,17 +3,14 @@ import { prisma as db } from "@/lib/prisma"
 import { DataTable } from "@/components/ui/data-table"
 import { attendanceColumns } from "./components/attendance-columns"
 
-// Untuk me-refresh halaman dashboard setiap beberapa waktu tanpa membebani browser, 
-// kita bisa menggunakan Revalidate Route Segment di Next.js.
-export const revalidate = 60 // Refresh cache halaman ini setiap 60 detik
+export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboardPage() {
   const session = await auth()
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const tomorrow = new Date(today)
-  tomorrow.setDate(today.getDate() + 1)
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000 - 1)
 
   // Fetch Dashboard Stats
   const [totalUsers, pendingOvertimes, todayAttendances] = await Promise.all([
@@ -21,7 +18,7 @@ export default async function AdminDashboardPage() {
     db.overtime.count({ where: { status: 'PENDING' } }),
     db.attendance.count({ 
       where: { 
-        record_date: { gte: today, lt: tomorrow }
+        record_date: { gte: todayStart, lte: todayEnd }
       } 
     })
   ])
@@ -29,7 +26,7 @@ export default async function AdminDashboardPage() {
   // Fetch Latest Attendances
   const recentAttendances = await db.attendance.findMany({
     where: {
-      record_date: { gte: today, lt: tomorrow }
+      record_date: { gte: todayStart, lte: todayEnd }
     },
     include: {
       user: {

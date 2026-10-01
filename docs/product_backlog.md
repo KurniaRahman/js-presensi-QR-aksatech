@@ -9,9 +9,9 @@ Dokumen ini memecah kebutuhan sistem menjadi unit yang lebih kecil untuk dieksek
 * **MoSCoW:** Prioritas pengerjaan (Must Have, Should Have, Could Have, Won't Have).  
 * **Acceptance Criteria (BDD):** Skenario pengetesan menggunakan format *Given* (Kondisi Awal), *When* (Aksi), *Then* (Hasil yang Diharapkan).
 
-## **EPIC 1: Manajemen Akses & Autentikasi**
+## **EPIC 1: Manajemen Akses & Autentikasi** ✅ DONE
 
-### **1.1 User Story: Login Sistem**
+### **1.1 User Story: Login Sistem** [x]
 
 *As a User (Staff/PM/Admin), I want to login using my credentials, so that I can access the system securely.*
 
@@ -26,7 +26,7 @@ Dokumen ini memecah kebutuhan sistem menjadi unit yang lebih kecil untuk dieksek
     * *When* menekan tombol "Login",  
     * *Then* sistem menampilkan pesan error "Kredensial tidak valid" dan tetap di halaman login.
 
-### **1.2 User Story: Role-Based Access Control (RBAC)**
+### **1.2 User Story: Role-Based Access Control (RBAC)** [x]
 
 *As an Admin, I want the system to restrict access based on roles, so that Staff cannot access HR settings.*
 
@@ -37,9 +37,9 @@ Dokumen ini memecah kebutuhan sistem menjadi unit yang lebih kecil untuk dieksek
     * *When* mencoba mengakses URL /admin/reports,  
     * *Then* sistem menolak akses dan menampilkan halaman "403 Forbidden".
 
-## **EPIC 2: Modul Presensi & Keamanan Jaringan**
+## **EPIC 2: Modul Presensi & Keamanan Jaringan** ✅ DONE
 
-### **2.1 User Story: Validasi Jaringan Lokal (Wi-Fi Restriction)**
+### **2.1 User Story: Validasi Jaringan Lokal (Wi-Fi Restriction)** [x]
 
 *As an Admin, I want the attendance feature to only work on the office network, so that staff cannot clock-in from home.*
 
@@ -50,7 +50,7 @@ Dokumen ini memecah kebutuhan sistem menjadi unit yang lebih kecil untuk dieksek
     * *When* pengguna membuka halaman "Scan QR",  
     * *Then* tombol kamera dinonaktifkan dan sistem menampilkan pesan "Anda harus terhubung ke Wi-Fi kantor untuk melakukan presensi."
 
-### **2.2 User Story: Scan QR (Clock-In / Clock-Out) & Cooldown**
+### **2.2 User Story: Scan QR (Clock-In / Clock-Out) & Cooldown** [x]
 
 *As a Staff, I want to scan a QR code to record my attendance, so that my work hours are tracked automatically.*
 
@@ -69,9 +69,9 @@ Dokumen ini memecah kebutuhan sistem menjadi unit yang lebih kecil untuk dieksek
     * *When* pengguna berhasil melakukan *Scan QR*,  
     * *Then* sistem mencatat waktu tersebut sebagai "Clock-Out", menghitung "Total Durasi Kerja", dan menampilkan pesan "Hati-hati di jalan".
 
-## **EPIC 3: Modul Manajemen Lembur (Overtime)**
+## **EPIC 3: Modul Manajemen Lembur (Overtime)** 📝 TODO
 
-### **3.1 User Story: Pengajuan Lembur**
+### **3.1 User Story: Pengajuan Lembur** [ ]
 
 *As a Staff, I want to submit an overtime request, so that my extra work is recorded for approval.*
 
@@ -86,7 +86,7 @@ Dokumen ini memecah kebutuhan sistem menjadi unit yang lebih kecil untuk dieksek
     * *When* form di-*submit*,  
     * *Then* sistem menolak pengajuan dan menampilkan pesan error "Maksimal lembur harian adalah 3 jam."
 
-### **3.2 User Story: Approval Lembur oleh PM**
+### **3.2 User Story: Approval Lembur oleh PM** [ ]
 
 *As a Project Manager, I want to approve or reject overtime requests, so that only valid overtimes are processed by HR.*
 
@@ -97,9 +97,9 @@ Dokumen ini memecah kebutuhan sistem menjadi unit yang lebih kecil untuk dieksek
     * *When* PM menekan tombol "Approve",  
     * *Then* status lembur berubah menjadi "Approved" dan data jam masuk ke rekapitulasi bulanan.
 
-## **EPIC 4: Modul Administratif & Pelaporan**
+## **EPIC 4: Modul Administratif & Pelaporan** 📝 TODO
 
-### **4.1 User Story: Manual Override (Penyesuaian Status)**
+### **4.1 User Story: Manual Override (Penyesuaian Status)** [ ]
 
 *As an Admin/HR, I want to manually update a staff's attendance status, so that I can handle sick leaves or technical errors without them being marked as Alpha.*
 
@@ -110,7 +110,7 @@ Dokumen ini memecah kebutuhan sistem menjadi unit yang lebih kecil untuk dieksek
     * *When* Admin memilih status "Sakit" dan menekan "Simpan",  
     * *Then* sistem mencatat status kehadiran karyawan tersebut sebagai "Sakit" (bukan Alpha) di database.
 
-### **4.2 User Story: Input Nominal Lembur (Dinamic Rate)**
+### **4.2 User Story: Input Nominal Lembur (Dinamic Rate)** [ ]
 
 *As an Admin, I want to input the overtime rate/nominal manually at the end of the month, so that the system doesn't need hardcoded salary calculations.*
 
@@ -121,7 +121,7 @@ Dokumen ini memecah kebutuhan sistem menjadi unit yang lebih kecil untuk dieksek
     * *When* Admin memasukkan angka nominal pada kolom "Rate Per Jam" dan menyimpan,  
     * *Then* sistem mengkalikan Total Jam Lembur *Approved* dengan Nominal tersebut pada tampilan rekap.
 
-### **4.3 User Story: Export Laporan (Excel/CSV)**
+### **4.3 User Story: Export Laporan (Excel/CSV)** [ ]
 
 *As an Admin, I want to export attendance and overtime data, so that I can process payroll easily in Excel.*
 
@@ -132,9 +132,9 @@ Dokumen ini memecah kebutuhan sistem menjadi unit yang lebih kecil untuk dieksek
     * *When* Admin menekan tombol "Export to Excel",  
     * *Then* sistem mengunduh file .xlsx yang berisi kolom: Nama, Tanggal, Jam Masuk, Jam Pulang, Durasi Kerja, Status (Hadir/Sakit/Izin/Alpha), dan Total Jam Lembur (Approved).
 
-## **EPIC 5: Manajemen Pengguna (CRUD)**
+## **EPIC 5: Manajemen Pengguna (CRUD)** ✅ DONE
 
-### **5.1 User Story: Tambah Pengguna Baru (Create)**
+### **5.1 User Story: Tambah Pengguna Baru (Create)** [x]
 
 *As an Admin, I want to create a new user account, so that new staff or PMs can access the system.*
 
@@ -145,7 +145,7 @@ Dokumen ini memecah kebutuhan sistem menjadi unit yang lebih kecil untuk dieksek
     * *When* Admin mengisi form (Nama, Email, Password, Role) dan menekan "Simpan",  
     * *Then* sistem menyimpan data ke *database*, meng-enkripsi *password*, dan menampilkan pesan "Pengguna berhasil ditambahkan".
 
-### **5.2 User Story: Edit Data Pengguna (Update)**
+### **5.2 User Story: Edit Data Pengguna (Update)** [x]
 
 *As an Admin, I want to edit existing user details, so that I can update their role, name, or reset their password.*
 
@@ -160,7 +160,7 @@ Dokumen ini memecah kebutuhan sistem menjadi unit yang lebih kecil untuk dieksek
     * *When* Admin mengisi kolom "Password Baru" dan menyimpan,  
     * *Then* sistem menimpa *password* lama dengan enkripsi *password* baru.
 
-### **5.3 User Story: Nonaktifkan Pengguna / Soft Delete (Delete)**
+### **5.3 User Story: Nonaktifkan Pengguna / Soft Delete (Delete)** [x]
 
 *As an Admin, I want to deactivate user accounts of resigned employees, so that they cannot login but their past data remains intact.*
 

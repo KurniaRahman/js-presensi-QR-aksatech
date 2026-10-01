@@ -1,40 +1,66 @@
-import { auth, signOut } from "@/auth"
-import { Button } from "@/components/ui/button"
+import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import { prisma as db } from "@/lib/prisma"
 
 export default async function DashboardPage() {
   const session = await auth()
   
-  if (!session?.user) {
+  if (!session?.user?.id) {
     redirect('/login')
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-sm border">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <form action={async () => {
-            "use server"
-            await signOut({ redirectTo: '/login' })
-          }}>
-            <Button type="submit" variant="outline">Logout</Button>
-          </form>
-        </div>
-        
-        <div className="space-y-4">
-          <h2 className="text-xl">Halo, <span className="font-semibold text-[#1F77C5]">{session.user.name}</span>!</h2>
-          <p className="text-gray-600">
-            Anda berhasil masuk. Role Anda saat ini adalah: <strong className="bg-gray-100 px-2 py-1 rounded">{session.user.role}</strong>
-          </p>
+  const now = new Date()
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000 - 1)
 
-          <div className="mt-8 p-4 bg-blue-50 border border-blue-100 rounded-md">
-            <h3 className="font-semibold text-blue-900 mb-2">Simulasi Navigasi Role:</h3>
-            <ul className="list-disc list-inside space-y-1 text-sm text-blue-800">
-              <li><a href="/admin" className="underline hover:text-blue-600">Ke Halaman Admin (Hanya ADMIN)</a></li>
-              <li><a href="/pm" className="underline hover:text-blue-600">Ke Halaman PM (Hanya PM & ADMIN)</a></li>
-            </ul>
-          </div>
+  const todayAttendance = await db.attendance.findFirst({
+    where: {
+      user_id: session.user.id,
+      record_date: {
+        gte: todayStart,
+        lte: todayEnd,
+      }
+    }
+  })
+
+  return (
+    <div className="p-8 max-w-4xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard Karyawan</h1>
+        <p className="text-gray-600 mt-1">
+          Halo, <span className="font-semibold text-[#1F77C5]">{session.user.name}</span>! Selamat Datang.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 className="text-gray-500 text-sm font-medium">Status Kehadiran Hari Ini</h3>
+          {!todayAttendance ? (
+            <>
+              <p className="text-2xl font-bold text-gray-900 mt-2">
+                <span className="text-yellow-600">Belum Absen</span>
+              </p>
+              <p className="text-xs text-gray-400 mt-1">Silakan lakukan Scan QR untuk Clock-in.</p>
+            </>
+          ) : (
+            <>
+              <p className="text-2xl font-bold text-gray-900 mt-2">
+                <span className="text-green-600">{todayAttendance.status}</span>
+              </p>
+              <div className="mt-3 text-sm text-gray-600 space-y-1">
+                <p>Clock-in: <span className="font-medium">{todayAttendance.clock_in.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span></p>
+                <p>Clock-out: <span className="font-medium">{todayAttendance.clock_out ? todayAttendance.clock_out.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}</span></p>
+                {todayAttendance.duration_minutes !== null && (
+                  <p>Durasi: <span className="font-medium">{todayAttendance.duration_minutes} Menit</span></p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 className="text-gray-500 text-sm font-medium">Total Jam Lembur Bulan Ini</h3>
+          <p className="text-2xl font-bold text-gray-900 mt-2">0 Jam</p>
+          <p className="text-xs text-gray-400 mt-1">Belum ada lembur yang disetujui.</p>
         </div>
       </div>
     </div>
