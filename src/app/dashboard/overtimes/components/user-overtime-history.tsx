@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Clock3, CheckCircle2, XCircle, Search, Filter, ChevronUp, ChevronDown, Clock, AlertCircle } from "lucide-react"
+import { Clock3, CheckCircle2, XCircle, Search, Filter, ArrowUpDown, ArrowUp, ArrowDown, RotateCcw, Clock, AlertCircle } from "lucide-react"
 import { isWeekendDay } from "@/lib/attendance-utils"
 
 type Overtime = {
@@ -29,6 +29,11 @@ export function UserOvertimeHistory({ overtimes }: { overtimes: Overtime[] }) {
       setSortCol(col)
       setSortDir("asc")
     }
+  }
+
+  const resetFilters = () => {
+    setSearchQuery("")
+    setStatusFilter("ALL")
   }
 
   const processedList = useMemo(() => {
@@ -77,25 +82,29 @@ export function UserOvertimeHistory({ overtimes }: { overtimes: Overtime[] }) {
   }, [overtimes, searchQuery, statusFilter, sortCol, sortDir])
 
   const SortIcon = ({ col }: { col: SortCol }) => {
-    if (sortCol !== col) return <ChevronUp className="w-4 h-4 text-slate-300 opacity-0 group-hover:opacity-100" />
-    return sortDir === "asc" ? <ChevronUp className="w-4 h-4 text-[#1F77C5]" /> : <ChevronDown className="w-4 h-4 text-[#1F77C5]" />
+    if (sortCol !== col) return <ArrowUpDown className="w-3.5 h-3.5 text-slate-300 hover:text-slate-500 inline-block ml-1" />
+    return sortDir === "asc" ? (
+      <ArrowUp className="w-3.5 h-3.5 text-[#1F77C5] inline-block ml-1" />
+    ) : (
+      <ArrowDown className="w-3.5 h-3.5 text-[#1F77C5] inline-block ml-1" />
+    )
   }
 
   const renderStatus = (status: string) => {
     if (status === 'PENDING') return (
-      <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-bold whitespace-nowrap">
+      <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-200 text-xs font-semibold whitespace-nowrap">
         <Clock3 className="w-3.5 h-3.5" />
         <span>MENUNGGU</span>
       </span>
     )
     if (status === 'APPROVED') return (
-      <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-xs font-bold whitespace-nowrap">
+      <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold whitespace-nowrap">
         <CheckCircle2 className="w-3.5 h-3.5" />
         <span>DISETUJUI</span>
       </span>
     )
     if (status === 'REJECTED') return (
-      <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-xs font-bold whitespace-nowrap">
+      <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold whitespace-nowrap">
         <XCircle className="w-3.5 h-3.5" />
         <span>DITOLAK</span>
       </span>
@@ -111,24 +120,39 @@ export function UserOvertimeHistory({ overtimes }: { overtimes: Overtime[] }) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input 
             type="text"
-            placeholder="Cari alasan..."
+            placeholder="Cari alasan lembur..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#1F77C5] transition-all"
+            className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-[#1F77C5] transition-all bg-white"
           />
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 flex-wrap">
           <Filter className="w-4 h-4 text-slate-400" />
           <select 
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#1F77C5] bg-white cursor-pointer"
+            className="text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#1F77C5] bg-white cursor-pointer font-medium text-slate-700"
           >
-            <option value="ALL">Semua</option>
+            <option value="ALL">Semua Status</option>
             <option value="PENDING">Menunggu</option>
             <option value="APPROVED">Disetujui</option>
             <option value="REJECTED">Ditolak</option>
           </select>
+
+          {(searchQuery || statusFilter !== "ALL") && (
+            <button
+              onClick={resetFilters}
+              className="flex items-center space-x-1 text-xs text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2.5 py-2 rounded-xl transition-colors font-medium"
+              title="Reset Filter"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Reset</span>
+            </button>
+          )}
+
+          <span className="text-xs bg-blue-50 text-[#1F77C5] font-semibold px-2.5 py-1 rounded-full border border-blue-100">
+            {processedList.length} Total
+          </span>
         </div>
       </div>
 
@@ -176,26 +200,38 @@ export function UserOvertimeHistory({ overtimes }: { overtimes: Overtime[] }) {
               <table className="w-full text-left text-sm text-slate-600">
                 <thead className="bg-slate-50 text-slate-700 text-xs uppercase font-semibold border-b border-slate-200">
                   <tr>
-                    <th onClick={() => handleSort("date")} className="px-4 py-3 cursor-pointer group hover:bg-slate-100 transition-colors w-1/4">
-                      <div className="flex items-center space-x-1">
+                    <th 
+                      onClick={() => handleSort("date")} 
+                      className="px-4 py-3.5 cursor-pointer select-none hover:bg-slate-100 transition-colors w-1/4"
+                    >
+                      <div className="flex items-center space-x-1.5">
                         <span>Tanggal</span>
                         <SortIcon col="date" />
                       </div>
                     </th>
-                    <th onClick={() => handleSort("duration")} className="px-4 py-3 cursor-pointer group hover:bg-slate-100 transition-colors w-1/6">
-                      <div className="flex items-center space-x-1">
+                    <th 
+                      onClick={() => handleSort("duration")} 
+                      className="px-4 py-3.5 cursor-pointer select-none hover:bg-slate-100 transition-colors w-1/6"
+                    >
+                      <div className="flex items-center space-x-1.5">
                         <span>Durasi</span>
                         <SortIcon col="duration" />
                       </div>
                     </th>
-                    <th onClick={() => handleSort("status")} className="px-4 py-3 cursor-pointer group hover:bg-slate-100 transition-colors w-1/6">
-                      <div className="flex items-center space-x-1">
+                    <th 
+                      onClick={() => handleSort("status")} 
+                      className="px-4 py-3.5 cursor-pointer select-none hover:bg-slate-100 transition-colors w-1/6"
+                    >
+                      <div className="flex items-center space-x-1.5">
                         <span>Status</span>
                         <SortIcon col="status" />
                       </div>
                     </th>
-                    <th onClick={() => handleSort("reason")} className="px-4 py-3 cursor-pointer group hover:bg-slate-100 transition-colors w-5/12">
-                      <div className="flex items-center space-x-1">
+                    <th 
+                      onClick={() => handleSort("reason")} 
+                      className="px-4 py-3.5 cursor-pointer select-none hover:bg-slate-100 transition-colors w-5/12"
+                    >
+                      <div className="flex items-center space-x-1.5">
                         <span>Alasan</span>
                         <SortIcon col="reason" />
                       </div>
@@ -220,7 +256,7 @@ export function UserOvertimeHistory({ overtimes }: { overtimes: Overtime[] }) {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-amber-600 font-medium">
+                        <span className="text-amber-600 font-semibold">
                           {ot.duration_hours} Jam
                         </span>
                       </td>
@@ -234,6 +270,11 @@ export function UserOvertimeHistory({ overtimes }: { overtimes: Overtime[] }) {
                   ))}
                 </tbody>
               </table>
+            </div>
+            <div className="flex items-center justify-between text-xs text-slate-500 px-4 py-3 border-t border-slate-100 bg-slate-50/50">
+              <div>
+                Total <strong>{processedList.length}</strong> data riwayat lembur ditampilkan
+              </div>
             </div>
           </div>
         </>

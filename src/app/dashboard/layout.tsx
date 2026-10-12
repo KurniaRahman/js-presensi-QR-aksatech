@@ -22,8 +22,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
   ]
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-gray-50 overflow-hidden pb-16 md:pb-0">
-      <Sidebar navItems={userNavItems} userName={session.user.name || session.user.email || "Karyawan"} hideMobile={true} />
+    <div className="flex flex-col md:flex-row h-screen bg-slate-50 overflow-hidden pb-16 md:pb-0">
+      <Sidebar 
+        navItems={userNavItems} 
+        userName={session.user.name || session.user.email || "Karyawan"} 
+        userRole={session.user.role === 'PM' ? 'Project Manager' : session.user.role || 'Staff'} 
+        hideMobile={true} 
+      />
       <BottomNav navItems={userNavItems} />
 
       <main className="flex-1 overflow-y-auto w-full relative">

@@ -4,14 +4,15 @@ import { prisma as db } from "@/lib/prisma"
 import { auth } from "@/auth"
 import { revalidatePath } from "next/cache"
 import { calculateEffectiveOvertime } from "@/lib/attendance-utils"
+import { syncAlphaAttendance } from "@/lib/sync-alpha"
 
 export async function getUsersForOverride() {
   const session = await auth()
   if (session?.user?.role !== 'ADMIN') throw new Error("Unauthorized")
 
   return await db.user.findMany({
-    where: { is_active: true, role: 'STAFF' },
-    select: { id: true, full_name: true },
+    where: { is_active: true },
+    select: { id: true, full_name: true, role: true },
     orderBy: { full_name: 'asc' }
   })
 }
@@ -91,8 +92,16 @@ export async function getReportData(startDate: string, endDate: string) {
   const end = new Date(endDate)
   end.setHours(23, 59, 59, 999)
 
+  // Otomatis tandai ALPHA bagi pengguna aktif yang tidak presensi setelah jam kerja (17:00)
+  await syncAlphaAttendance(startDate, endDate)
+
   const users = await db.user.findMany({
-    where: { is_active: true, role: 'STAFF' },
+    where: {
+      OR: [
+        { is_active: true },
+        { attendances: { some: { record_date: { gte: start, lte: end } } } }
+      ]
+    },
     include: {
       attendances: {
         where: {
@@ -144,9 +153,11 @@ export async function getReportData(startDate: string, endDate: string) {
       lemburWeekend += effective.weekendHours
     })
 
+    const roleName = user.role === 'ADMIN' ? 'Admin' : user.role === 'PM' ? 'Project Manager' : 'Staff'
+
     return {
       nama: user.full_name,
-      jabatan: "Staff", // Kita hardcode 'Staff' karena rolenya STAFF
+      jabatan: roleName,
       jumlahHadir,
       totalJamKerja,
       lemburWeekday,
@@ -179,8 +190,16 @@ export async function getDailyRecords(startDate: string, endDate: string) {
   const start = new Date(`${startDate}T00:00:00.000Z`)
   const end = new Date(`${endDate}T23:59:59.999Z`)
 
+  // Otomatis tandai ALPHA bagi pengguna aktif yang tidak presensi setelah jam kerja (17:00)
+  await syncAlphaAttendance(startDate, endDate)
+
   const users = await db.user.findMany({
-    where: { is_active: true, role: 'STAFF' },
+    where: {
+      OR: [
+        { is_active: true },
+        { attendances: { some: { record_date: { gte: start, lte: end } } } }
+      ]
+    },
     include: {
       attendances: { where: { record_date: { gte: start, lte: end } } },
       overtimes: { where: { request_date: { gte: start, lte: end } } }
@@ -209,6 +228,7 @@ export async function getDailyRecords(startDate: string, endDate: string) {
         id: `${user.id}_${dateStr}`,
         user_id: user.id,
         user_name: user.full_name,
+        user_role: user.role,
         dateStr: dateStr,
         date: new Date(`${dateStr}T00:00:00.000Z`),
         attendance: data.attendance || null,

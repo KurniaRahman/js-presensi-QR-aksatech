@@ -20,8 +20,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   ]
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-gray-50 overflow-hidden">
-      <Sidebar navItems={adminNavItems} userName={session.user.name || session.user.email || "Admin"} />
+    <div className="flex flex-col md:flex-row h-screen bg-slate-50 overflow-hidden">
+      <Sidebar 
+        navItems={adminNavItems} 
+        userName={session.user.name || session.user.email || "Admin"} 
+        userRole="Administrator"
+      />
       
       <main className="flex-1 overflow-y-auto w-full">
         {children}

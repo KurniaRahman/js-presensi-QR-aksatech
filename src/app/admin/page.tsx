@@ -2,23 +2,62 @@ import { auth } from "@/auth"
 import { prisma as db } from "@/lib/prisma"
 import { DataTable } from "@/components/ui/data-table"
 import { attendanceColumns } from "./components/attendance-columns"
+import { syncAlphaAttendance } from "@/lib/sync-alpha"
+import { DigitalClock } from "@/app/dashboard/components/digital-clock"
+import Link from "next/link"
+import { 
+  Users, 
+  Clock, 
+  CalendarCheck, 
+  AlertCircle, 
+  ScanLine, 
+  FileDown, 
+  Sparkles, 
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
+  Compass
+} from "lucide-react"
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboardPage() {
   const session = await auth()
 
+  // Otomatis tandai ALPHA jika sudah lewat jam kerja (17:00) pada hari kerja
+  await syncAlphaAttendance()
+
+  const now = new Date()
+
+  // Sapaan dinamis berdasarkan jam Asia/Jakarta
+  const currentHour = parseInt(
+    new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', hour: 'numeric', hour12: false }).format(now),
+    10
+  )
+  const greeting = 
+    currentHour >= 4 && currentHour < 11 ? "Selamat Pagi" :
+    currentHour >= 11 && currentHour < 15 ? "Selamat Siang" :
+    currentHour >= 15 && currentHour < 18 ? "Selamat Sore" :
+    "Selamat Malam"
+
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
   const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000 - 1)
 
   // Fetch Dashboard Stats
-  const [totalUsers, pendingOvertimes, todayAttendances] = await Promise.all([
+  const [totalUsers, pendingOvertimes, todayAttendances, todayAlphas] = await Promise.all([
     db.user.count({ where: { is_active: true } }),
     db.overtime.count({ where: { status: 'PENDING' } }),
     db.attendance.count({ 
       where: { 
-        record_date: { gte: todayStart, lte: todayEnd }
+        record_date: { gte: todayStart, lte: todayEnd },
+        status: 'HADIR'
+      } 
+    }),
+    db.attendance.count({ 
+      where: { 
+        record_date: { gte: todayStart, lte: todayEnd },
+        status: 'ALPHA'
       } 
     })
   ])
@@ -36,47 +75,235 @@ export default async function AdminDashboardPage() {
     orderBy: {
       clock_in: 'desc'
     },
-    take: 10
+    take: 15
   })
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard Admin</h1>
-        <p className="text-gray-600 mt-1">Selamat datang kembali, {session?.user?.name}!</p>
+    <div className="relative min-h-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-fade-in">
+      
+      {/* Ornamen Ambient Background & Aerospace Radar Rings */}
+      <div className="absolute top-0 right-10 w-[500px] h-[500px] bg-gradient-to-br from-[#1F77C5]/12 via-sky-300/10 to-transparent rounded-full blur-3xl pointer-events-none -z-10"></div>
+      <div className="absolute top-96 left-0 w-[420px] h-[420px] bg-gradient-to-tr from-sky-400/8 via-[#1F77C5]/5 to-transparent rounded-full blur-3xl pointer-events-none -z-10"></div>
+      
+      {/* Delicate Aerospace Orbital Radar Rings */}
+      <div className="absolute -top-16 -right-16 w-96 h-96 rounded-full border border-blue-200/35 pointer-events-none -z-10"></div>
+      <div className="absolute -top-32 -right-32 w-[520px] h-[520px] rounded-full border border-blue-100/25 pointer-events-none -z-10"></div>
+
+      {/* Subtle Aerospace Tech Dot Grid */}
+      <div className="absolute inset-0 bg-[radial-gradient(#1F77C515_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none -z-10 opacity-70"></div>
+
+      {/* 1. Header Eksekutif Admin & Live Clock */}
+      <div className="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(31,119,197,0.08)] border border-blue-100/90 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+        {/* Aksen Top Stripe Gradient Brand Aksa Tech */}
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0B2545] via-[#1F77C5] to-sky-400"></div>
+
+        {/* Ornamen Grafis Lingkaran Halus */}
+        <div className="absolute -right-12 -bottom-12 w-56 h-56 bg-gradient-to-br from-blue-100/40 to-sky-50/20 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div className="space-y-2 relative z-10">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-[#1F77C5] text-white shadow-xs shadow-blue-500/20 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-blue-200" />
+              Administrator Console
+            </span>
+            <span className="text-xs text-blue-300 font-bold hidden sm:inline">•</span>
+            <span className="text-xs font-semibold text-[#1F77C5] bg-blue-50/80 px-2.5 py-0.5 rounded-full border border-blue-100">
+              Sistem HRIS PT Aksa Tech
+            </span>
+          </div>
+
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+            {greeting}, <span className="bg-gradient-to-r from-[#0B2545] via-[#1F77C5] to-sky-600 bg-clip-text text-transparent">{session?.user?.name || "Admin"}</span>
+          </h1>
+
+          <p className="text-xs sm:text-sm text-slate-500 max-w-xl font-normal leading-relaxed">
+            Pusat kendali kehadiran, verifikasi lembur, dan manajemen operasional karyawan PT Aksa Tech secara terpadu.
+          </p>
+        </div>
+
+        {/* Live Clock Widget beraksen Kaca & Biru */}
+        <div className="bg-gradient-to-br from-white via-white to-blue-50/40 border border-blue-200/80 rounded-2xl p-4 sm:p-5 shadow-xs min-w-[240px] flex-shrink-0 relative z-10">
+          <DigitalClock align="right" />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <h3 className="text-gray-500 text-sm font-medium">Total Karyawan Aktif</h3>
-          <p className="text-3xl font-bold text-[#1F77C5] mt-2">{totalUsers}</p>
+      {/* 2. 4 Executive Metric Cards (Berwarna & Tetap Dominan Putih Bersih) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        
+        {/* Card 1: Total Karyawan Aktif (Aksen Aksa Blue) */}
+        <Link 
+          href="/admin/users"
+          className="group p-5 rounded-2xl border-l-4 border-l-[#1F77C5] bg-gradient-to-br from-blue-50/70 via-white to-white border-t border-r border-b border-blue-200/90 shadow-2xs hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5 transition-all space-y-2 block"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black text-blue-800 uppercase tracking-wider">Karyawan Aktif</span>
+            <div className="w-8 h-8 rounded-xl bg-[#1F77C5] text-white flex items-center justify-center shadow-xs shadow-blue-500/20 group-hover:scale-110 transition-transform">
+              <Users className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-black text-[#1F77C5] font-mono">
+            {totalUsers} <span className="text-xs font-bold text-slate-500 font-sans">Orang</span>
+          </p>
+          <div className="flex items-center justify-between pt-1 text-[11px] text-slate-400 group-hover:text-[#1F77C5] transition-colors font-medium">
+            <span>Kelola pengguna</span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </Link>
+
+        {/* Card 2: Hadir Hari Ini (Aksen Emerald) */}
+        <div className="p-5 rounded-2xl border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50/70 via-white to-white border-t border-r border-b border-emerald-200/90 shadow-2xs hover:shadow-md hover:border-emerald-300 hover:-translate-y-0.5 transition-all space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black text-emerald-800 uppercase tracking-wider">Hadir Hari Ini</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-xs shadow-emerald-500/20">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-black text-emerald-700 font-mono">
+            {todayAttendances} <span className="text-xs font-bold text-slate-500 font-sans">Karyawan</span>
+          </p>
+          <p className="text-[11px] font-medium text-slate-400 pt-1">
+            Presensi terverifikasi valid
+          </p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <h3 className="text-gray-500 text-sm font-medium">Lembur Menunggu Approval</h3>
-          <p className="text-3xl font-bold text-amber-500 mt-2">{pendingOvertimes}</p>
+
+        {/* Card 3: Lembur Pending (Aksen Amber) */}
+        <Link 
+          href="/admin/overtime"
+          className="group p-5 rounded-2xl border-l-4 border-l-amber-500 bg-gradient-to-br from-amber-50/70 via-white to-white border-t border-r border-b border-amber-200/90 shadow-2xs hover:shadow-md hover:border-amber-300 hover:-translate-y-0.5 transition-all space-y-2 block"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black text-amber-800 uppercase tracking-wider">Lembur Pending</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs shadow-amber-500/20 group-hover:scale-110 transition-transform">
+              <Clock className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-black text-amber-600 font-mono">
+            {pendingOvertimes} <span className="text-xs font-bold text-slate-500 font-sans">Pengajuan</span>
+          </p>
+          <div className="flex items-center justify-between pt-1 text-[11px] text-slate-400 group-hover:text-amber-600 transition-colors font-medium">
+            <span>Tinjau lembur</span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </Link>
+
+        {/* Card 4: Alpha / Tidak Hadir (Aksen Rose) */}
+        <div className="p-5 rounded-2xl border-l-4 border-l-rose-500 bg-gradient-to-br from-rose-50/70 via-white to-white border-t border-r border-b border-rose-200/90 shadow-2xs hover:shadow-md hover:border-rose-300 hover:-translate-y-0.5 transition-all space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black text-rose-800 uppercase tracking-wider">Alpha Hari Ini</span>
+            <div className="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-xs shadow-rose-500/20">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-black text-rose-600 font-mono">
+            {todayAlphas} <span className="text-xs font-bold text-slate-500 font-sans">Karyawan</span>
+          </p>
+          <p className="text-[11px] font-medium text-slate-400 pt-1">
+            Otomatis setelah 17:00 WIB
+          </p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <h3 className="text-gray-500 text-sm font-medium">Karyawan Hadir Hari Ini</h3>
-          <p className="text-3xl font-bold text-green-600 mt-2">{todayAttendances}</p>
-        </div>
+
       </div>
 
-      {/* Real-time Attendances Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900">Data Presensi Terbaru (Hari Ini)</h2>
-          <span className="text-xs font-medium bg-green-100 text-green-800 px-2 py-1 rounded-full animate-pulse">
-            Live Update
-          </span>
+      {/* 3. Quick Action Shortcuts for Admin */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <Link
+          href="/admin/scan"
+          className="p-4 rounded-2xl bg-white border border-blue-200/80 hover:border-[#1F77C5] hover:bg-gradient-to-br hover:from-white hover:to-blue-50/60 hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3.5 group shadow-2xs"
+        >
+          <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1F77C5] border border-blue-200/80 flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xs flex-shrink-0">
+            <ScanLine className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="font-black text-slate-800 text-xs sm:text-sm group-hover:text-[#1F77C5] transition-colors">
+              Scan Presensi
+            </p>
+            <p className="text-[10px] text-slate-400 font-medium">Buka pemindai QR</p>
+          </div>
+        </Link>
+
+        <Link
+          href="/admin/users"
+          className="p-4 rounded-2xl bg-white border border-blue-200/80 hover:border-[#1F77C5] hover:bg-gradient-to-br hover:from-white hover:to-blue-50/60 hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3.5 group shadow-2xs"
+        >
+          <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 border border-sky-200/80 flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xs flex-shrink-0">
+            <Users className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="font-black text-slate-800 text-xs sm:text-sm group-hover:text-[#1F77C5] transition-colors">
+              Data Karyawan
+            </p>
+            <p className="text-[10px] text-slate-400 font-medium">Kelola akun staf</p>
+          </div>
+        </Link>
+
+        <Link
+          href="/admin/overtime"
+          className="p-4 rounded-2xl bg-white border border-amber-200/80 hover:border-amber-500 hover:bg-gradient-to-br hover:from-white hover:to-amber-50/60 hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3.5 group shadow-2xs"
+        >
+          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xs flex-shrink-0">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="font-black text-slate-800 text-xs sm:text-sm group-hover:text-amber-600 transition-colors">
+              Kelola Lembur
+            </p>
+            <p className="text-[10px] text-slate-400 font-medium">Approval pengajuan</p>
+          </div>
+        </Link>
+
+        <Link
+          href="/admin/reports"
+          className="p-4 rounded-2xl bg-white border border-purple-200/80 hover:border-purple-500 hover:bg-gradient-to-br hover:from-white hover:to-purple-50/60 hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3.5 group shadow-2xs"
+        >
+          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 border border-purple-200/80 flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xs flex-shrink-0">
+            <FileDown className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="font-black text-slate-800 text-xs sm:text-sm group-hover:text-purple-600 transition-colors">
+              Laporan Absensi
+            </p>
+            <p className="text-[10px] text-slate-400 font-medium">Rekapitulasi berkala</p>
+          </div>
+        </Link>
+      </div>
+
+      {/* 4. Real-time Attendances Table Card */}
+      <div className="bg-white rounded-3xl shadow-[0_4px_25px_-5px_rgba(31,119,197,0.06)] border border-slate-200/90 overflow-hidden relative">
+        {/* Top Accent Stripe */}
+        <div className="h-1.5 w-full bg-gradient-to-r from-[#0B2545] via-[#1F77C5] to-sky-400"></div>
+
+        <div className="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-blue-50/40 via-white to-slate-50/20">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#1F77C5] border border-blue-200/80 flex items-center justify-center shadow-2xs">
+              <Compass className="w-5 h-5 text-[#1F77C5]" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                Data Presensi Hari Ini (Real-Time)
+              </h2>
+              <p className="text-[11px] text-slate-400">
+                {now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Live Monitoring
+            </span>
+          </div>
         </div>
-        <div className="p-4">
+
+        <div className="p-4 sm:p-6">
           <DataTable 
             columns={attendanceColumns} 
             data={recentAttendances} 
-            searchPlaceholder="Cari presensi..."
+            searchPlaceholder="Cari presensi atau nama karyawan..."
           />
         </div>
       </div>
+
     </div>
   )
 }

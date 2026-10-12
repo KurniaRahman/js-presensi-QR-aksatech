@@ -3,6 +3,8 @@
 import { auth } from "@/auth"
 import { prisma as db } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { isWeekendDay } from "@/lib/attendance-utils"
+import { syncAlphaAttendance } from "@/lib/sync-alpha"
 
 export async function processAttendance(qrCode: string) {
   const session = await auth()
@@ -28,12 +30,37 @@ export async function processAttendance(qrCode: string) {
     }
   })
 
+  // Jika status presensi bukan HADIR (misal ALPHA, SAKIT, IZIN)
+  if (existingAttendance) {
+    if (existingAttendance.status === 'ALPHA') {
+      return { success: false, message: "Jam kerja reguler telah berakhir (pukul 17:00) dan status Anda tercatat Alpha hari ini." }
+    }
+    if (existingAttendance.status === 'SAKIT') {
+      return { success: false, message: "Status presensi Anda hari ini tercatat Sakit." }
+    }
+    if (existingAttendance.status === 'IZIN') {
+      return { success: false, message: "Status presensi Anda hari ini tercatat Izin." }
+    }
+  }
+
+  // Jika belum absen dan hari ini adalah hari kerja (weekday) serta sudah melewati jam 17:00
+  const currentHour = parseInt(
+    new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', hour: 'numeric', hour12: false }).format(now),
+    10
+  )
+  if (!existingAttendance && !isWeekendDay(todayRecordDate) && currentHour >= 17) {
+    await syncAlphaAttendance()
+    revalidatePath('/dashboard')
+    revalidatePath('/admin')
+    return { success: false, message: "Jam kerja reguler telah berakhir (pukul 17:00). Anda tidak melakukan presensi tepat waktu dan tercatat Alpha hari ini." }
+  }
+
   // Cooldown check 15 menit
   if (existingAttendance) {
     const lastScan = existingAttendance.clock_out || existingAttendance.clock_in
     if (lastScan) {
       const diffMinutes = (now.getTime() - lastScan.getTime()) / (1000 * 60)
-      if (diffMinutes < 1) { // 1 menit untuk testing, aslinya 15 menit
+      if (diffMinutes < 15) { 
          return { success: false, message: "Harap tunggu beberapa saat sebelum memindai lagi (Cooldown aktif)." }
       }
     }

@@ -17,27 +17,57 @@ export const attendanceColumns: ColumnDef<DashboardAttendance>[] = [
   {
     accessorKey: "user.full_name",
     header: "Nama Karyawan",
-    cell: ({ row }) => <div className="font-medium">{row.original.user.full_name}</div>,
+    cell: ({ row }) => (
+      <div className="font-semibold text-slate-800">
+        {row.original.user.full_name}
+      </div>
+    ),
   },
   {
     accessorKey: "user.role",
-    header: "Role",
-    cell: ({ row }) => <span className="text-xs text-gray-500">{row.original.user.role}</span>,
+    header: "Peran (Role)",
+    cell: ({ row }) => {
+      const role = row.original.user.role
+      const badgeClasses = 
+        role === "ADMIN" ? "bg-purple-50 text-purple-700 border-purple-200" :
+        role === "PM" ? "bg-blue-50 text-blue-700 border-blue-200" :
+        "bg-slate-100 text-slate-700 border-slate-200"
+      
+      return (
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${badgeClasses}`}>
+          {role}
+        </span>
+      )
+    },
   },
   {
     accessorKey: "clock_in",
     header: "Waktu Masuk",
     cell: ({ row }) => {
-      return new Date(row.original.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
+      if (row.original.status !== 'HADIR') {
+        return <span className="text-slate-400 italic text-xs">-</span>
+      }
+      return (
+        <span className="font-mono text-xs font-medium text-slate-700">
+          {new Date(row.original.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })}
+        </span>
+      )
     },
   },
   {
     accessorKey: "clock_out",
     header: "Waktu Keluar",
     cell: ({ row }) => {
+      if (row.original.status !== 'HADIR') {
+        return <span className="text-slate-400 italic text-xs">-</span>
+      }
       return row.original.clock_out 
-        ? new Date(row.original.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
-        : <span className="text-gray-400 italic">Belum Keluar</span>
+        ? (
+          <span className="font-mono text-xs font-medium text-slate-700">
+            {new Date(row.original.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })}
+          </span>
+        )
+        : <span className="text-slate-400 italic text-xs">Belum Keluar</span>
     },
   },
   {
@@ -46,13 +76,13 @@ export const attendanceColumns: ColumnDef<DashboardAttendance>[] = [
     cell: ({ row }) => {
       const status = row.original.status
       const colorClass = 
-        status === 'HADIR' ? 'bg-green-100 text-green-800' :
-        status === 'SAKIT' ? 'bg-yellow-100 text-yellow-800' :
-        status === 'IZIN' ? 'bg-blue-100 text-blue-800' :
-        'bg-red-100 text-red-800'
+        status === 'HADIR' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+        status === 'SAKIT' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+        status === 'IZIN' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+        'bg-rose-50 text-rose-700 border-rose-200'
       
       return (
-        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${colorClass}`}>
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${colorClass}`}>
           {status}
         </span>
       )

@@ -1,16 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { getDailyRecords, getReportData, saveDailyRecord, deleteAttendanceRecord } from "@/actions/admin-attendance"
 import { calculateEffectiveOvertime, isWeekendDay } from "@/lib/attendance-utils"
-import { Search, Download, Plus, Calendar as CalendarIcon, X, Edit2, Trash2, AlertTriangle } from "lucide-react"
+import { Search, Download, Plus, Calendar as CalendarIcon, X, Edit2, Trash2, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, Filter, RotateCcw } from "lucide-react"
 import * as XLSX from "xlsx"
 
-type StaffUser = { id: string; full_name: string }
+type StaffUser = { id: string; full_name: string; role?: string }
 type DailyRecord = {
   id: string;
   user_id: string;
   user_name: string;
+  user_role?: string;
   dateStr: string;
   date: Date;
   attendance: { id?: string, status: string, clock_in: Date, clock_out: Date | null } | null;
@@ -33,6 +34,10 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
   })
   const [records, setRecords] = useState<DailyRecord[]>([])
   const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState<string>("ALL")
+  type SortCol = "date" | "name" | "status" | "clockIn" | "clockOut" | "otWeekday" | "otWeekend"
+  const [sortCol, setSortCol] = useState<SortCol>("date")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
   const [isLoading, setIsLoading] = useState(false)
 
   // Modal state
@@ -66,7 +71,97 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
     loadData()
   }, [startDate, endDate])
 
-  const filtered = records.filter(r => r.user_name.toLowerCase().includes(searchQuery.toLowerCase()))
+  const handleSort = (col: SortCol) => {
+    if (sortCol === col) {
+      setSortDir(prev => prev === "asc" ? "desc" : "asc")
+    } else {
+      setSortCol(col)
+      setSortDir(col === "date" ? "desc" : "asc")
+    }
+  }
+
+  const resetFilters = () => {
+    setSearchQuery("")
+    setStatusFilter("ALL")
+  }
+
+  const processedRecords = useMemo(() => {
+    let list = records.filter(r => {
+      if (searchQuery && !r.user_name.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false
+      }
+      if (statusFilter !== "ALL") {
+        if (!r.attendance || r.attendance.status !== statusFilter) return false
+      }
+      return true
+    })
+
+    list.sort((a, b) => {
+      let valA: any
+      let valB: any
+
+      switch (sortCol) {
+        case "date":
+          valA = new Date(a.dateStr || a.date).getTime()
+          valB = new Date(b.dateStr || b.date).getTime()
+          break
+        case "name":
+          valA = a.user_name.toLowerCase()
+          valB = b.user_name.toLowerCase()
+          break
+        case "status":
+          valA = a.attendance?.status || ""
+          valB = b.attendance?.status || ""
+          break
+        case "clockIn":
+          valA = a.attendance?.clock_in ? new Date(a.attendance.clock_in).getTime() : 0
+          valB = b.attendance?.clock_in ? new Date(b.attendance.clock_in).getTime() : 0
+          break
+        case "clockOut":
+          valA = a.attendance?.clock_out ? new Date(a.attendance.clock_out).getTime() : 0
+          valB = b.attendance?.clock_out ? new Date(b.attendance.clock_out).getTime() : 0
+          break
+        case "otWeekday": {
+          const appA = a.overtime?.status === 'APPROVED' ? a.overtime.duration_hours : 0
+          const effA = calculateEffectiveOvertime(a.dateStr || a.date, a.attendance?.clock_in ? new Date(a.attendance.clock_in) : null, a.attendance?.clock_out ? new Date(a.attendance.clock_out) : null, appA)
+          valA = !effA.isWeekend ? effA.effectiveHours : -1
+
+          const appB = b.overtime?.status === 'APPROVED' ? b.overtime.duration_hours : 0
+          const effB = calculateEffectiveOvertime(b.dateStr || b.date, b.attendance?.clock_in ? new Date(b.attendance.clock_in) : null, b.attendance?.clock_out ? new Date(b.attendance.clock_out) : null, appB)
+          valB = !effB.isWeekend ? effB.effectiveHours : -1
+          break
+        }
+        case "otWeekend": {
+          const appA = a.overtime?.status === 'APPROVED' ? a.overtime.duration_hours : 0
+          const effA = calculateEffectiveOvertime(a.dateStr || a.date, a.attendance?.clock_in ? new Date(a.attendance.clock_in) : null, a.attendance?.clock_out ? new Date(a.attendance.clock_out) : null, appA)
+          valA = effA.isWeekend ? effA.effectiveHours : -1
+
+          const appB = b.overtime?.status === 'APPROVED' ? b.overtime.duration_hours : 0
+          const effB = calculateEffectiveOvertime(b.dateStr || b.date, b.attendance?.clock_in ? new Date(b.attendance.clock_in) : null, b.attendance?.clock_out ? new Date(b.attendance.clock_out) : null, appB)
+          valB = effB.isWeekend ? effB.effectiveHours : -1
+          break
+        }
+        default:
+          valA = 0
+          valB = 0
+      }
+
+      if (valA < valB) return sortDir === "asc" ? -1 : 1
+      if (valA > valB) return sortDir === "asc" ? 1 : -1
+      return 0
+    })
+
+    return list
+  }, [records, searchQuery, statusFilter, sortCol, sortDir])
+
+  const SortIcon = ({ col }: { col: SortCol }) => {
+    if (sortCol !== col) return <ArrowUpDown className="w-3.5 h-3.5 text-slate-300 hover:text-slate-500 inline-block ml-1" />
+    return sortDir === "asc" ? (
+      <ArrowUp className="w-3.5 h-3.5 text-[#1F77C5] inline-block ml-1" />
+    ) : (
+      <ArrowDown className="w-3.5 h-3.5 text-[#1F77C5] inline-block ml-1" />
+    )
+  }
 
   const handleExport = async () => {
     setIsLoading(true)
@@ -177,8 +272,8 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
     <div className="space-y-6">
       {/* Controls Bar */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between md:items-center">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex items-center space-x-2 border border-slate-200 rounded-lg px-3 py-2 bg-slate-50">
+        <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-stretch sm:items-center">
+          <div className="flex items-center space-x-2 border border-slate-200 rounded-xl px-3 py-2 bg-slate-50">
             <CalendarIcon className="w-4 h-4 text-slate-500" />
             <input 
               type="date" 
@@ -198,18 +293,47 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 
               type="text"
-              placeholder="Cari nama..."
+              placeholder="Cari nama karyawan..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full sm:w-64 pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#1F77C5] transition-all"
+              className="w-full sm:w-60 pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-[#1F77C5] transition-all bg-white"
             />
           </div>
+          <div className="flex items-center space-x-1.5">
+            <Filter className="w-4 h-4 text-slate-400" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 focus:outline-none focus:border-[#1F77C5] cursor-pointer font-medium"
+            >
+              <option value="ALL">Semua Status</option>
+              <option value="HADIR">Hadir Saja</option>
+              <option value="SAKIT">Sakit Saja</option>
+              <option value="IZIN">Izin Saja</option>
+              <option value="ALPHA">Alpha Saja</option>
+            </select>
+          </div>
+
+          {(searchQuery || statusFilter !== "ALL") && (
+            <button
+              onClick={resetFilters}
+              className="flex items-center space-x-1 text-xs text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2.5 py-2 rounded-xl transition-colors font-medium"
+              title="Reset Filter"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Reset</span>
+            </button>
+          )}
+
+          <span className="text-xs bg-blue-50 text-[#1F77C5] font-semibold px-2.5 py-1 rounded-full border border-blue-100 self-center">
+            {processedRecords.length} Total
+          </span>
         </div>
 
         <div className="flex items-center gap-2">
           <button 
             onClick={openAddModal}
-            className="flex items-center space-x-2 bg-[#1F77C5] hover:bg-[#1a64a6] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center space-x-2 bg-[#1F77C5] hover:bg-[#1a64a6] text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Tambah Manual</span>
@@ -217,7 +341,7 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
           <button 
             onClick={handleExport}
             disabled={isLoading}
-            className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 shadow-sm"
           >
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Export Excel</span>
@@ -231,23 +355,79 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50 text-slate-700 text-xs uppercase font-semibold border-b border-slate-200">
               <tr>
-                <th className="px-4 py-3">Tanggal</th>
-                <th className="px-4 py-3">Nama Karyawan</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Jam Masuk</th>
-                <th className="px-4 py-3">Jam Keluar</th>
-                <th className="px-4 py-3 text-center">Lembur Weekday</th>
-                <th className="px-4 py-3 text-center">Lembur Weekend</th>
-                <th className="px-4 py-3 text-right">Aksi</th>
+                <th 
+                  onClick={() => handleSort("date")}
+                  className="px-4 py-3.5 cursor-pointer select-none hover:bg-slate-100 transition-colors"
+                >
+                  <div className="flex items-center space-x-1.5">
+                    <span>Tanggal</span>
+                    <SortIcon col="date" />
+                  </div>
+                </th>
+                <th 
+                  onClick={() => handleSort("name")}
+                  className="px-4 py-3.5 cursor-pointer select-none hover:bg-slate-100 transition-colors"
+                >
+                  <div className="flex items-center space-x-1.5">
+                    <span>Nama Karyawan</span>
+                    <SortIcon col="name" />
+                  </div>
+                </th>
+                <th 
+                  onClick={() => handleSort("status")}
+                  className="px-4 py-3.5 cursor-pointer select-none hover:bg-slate-100 transition-colors"
+                >
+                  <div className="flex items-center space-x-1.5">
+                    <span>Status</span>
+                    <SortIcon col="status" />
+                  </div>
+                </th>
+                <th 
+                  onClick={() => handleSort("clockIn")}
+                  className="px-4 py-3.5 cursor-pointer select-none hover:bg-slate-100 transition-colors"
+                >
+                  <div className="flex items-center space-x-1.5">
+                    <span>Jam Masuk</span>
+                    <SortIcon col="clockIn" />
+                  </div>
+                </th>
+                <th 
+                  onClick={() => handleSort("clockOut")}
+                  className="px-4 py-3.5 cursor-pointer select-none hover:bg-slate-100 transition-colors"
+                >
+                  <div className="flex items-center space-x-1.5">
+                    <span>Jam Keluar</span>
+                    <SortIcon col="clockOut" />
+                  </div>
+                </th>
+                <th 
+                  onClick={() => handleSort("otWeekday")}
+                  className="px-4 py-3.5 cursor-pointer select-none hover:bg-slate-100 transition-colors text-center"
+                >
+                  <div className="flex items-center justify-center space-x-1.5">
+                    <span>Lembur Weekday</span>
+                    <SortIcon col="otWeekday" />
+                  </div>
+                </th>
+                <th 
+                  onClick={() => handleSort("otWeekend")}
+                  className="px-4 py-3.5 cursor-pointer select-none hover:bg-slate-100 transition-colors text-center"
+                >
+                  <div className="flex items-center justify-center space-x-1.5">
+                    <span>Lembur Weekend</span>
+                    <SortIcon col="otWeekend" />
+                  </div>
+                </th>
+                <th className="px-4 py-3.5 text-right font-semibold">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {isLoading && filtered.length === 0 ? (
+              {isLoading && processedRecords.length === 0 ? (
                 <tr><td colSpan={8} className="text-center py-8 text-slate-400">Memuat data...</td></tr>
-              ) : filtered.length === 0 ? (
+              ) : processedRecords.length === 0 ? (
                 <tr><td colSpan={8} className="text-center py-8 text-slate-400">Tidak ada data di rentang waktu ini.</td></tr>
               ) : (
-                filtered.map((record) => {
+                processedRecords.map((record) => {
                   const approvedOt = record.overtime?.status === 'APPROVED' ? record.overtime.duration_hours : 0
                   const clockInDt = record.attendance?.clock_in ? new Date(record.attendance.clock_in) : null
                   const clockOutDt = record.attendance?.clock_out ? new Date(record.attendance.clock_out) : null
@@ -258,7 +438,20 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                       <td className="px-4 py-3 font-medium text-slate-800">
                         {new Date((record.dateStr || record.date) + "T00:00:00").toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}
                       </td>
-                      <td className="px-4 py-3">{record.user_name}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center space-x-1.5 flex-wrap">
+                          <span className="font-semibold text-slate-800">{record.user_name}</span>
+                          {record.user_role && record.user_role !== 'STAFF' && (
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                              record.user_role === 'ADMIN' 
+                                ? 'bg-purple-50 text-purple-700 border-purple-200' 
+                                : 'bg-blue-50 text-blue-700 border-blue-200'
+                            }`}>
+                              {record.user_role}
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-4 py-3">
                         {record.attendance ? (
                           <span className={`px-2 py-1 rounded text-xs font-bold ${
@@ -274,10 +467,10 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        {record.attendance ? new Date(record.attendance.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '-'}
+                        {record.attendance && record.attendance.status === 'HADIR' ? new Date(record.attendance.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '-'}
                       </td>
                       <td className="px-4 py-3">
-                        {record.attendance?.clock_out ? new Date(record.attendance.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '-'}
+                        {record.attendance?.clock_out && record.attendance.status === 'HADIR' ? new Date(record.attendance.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '-'}
                       </td>
                       {/* Lembur Weekday */}
                       <td className="px-4 py-3 text-center">
@@ -382,6 +575,11 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
             </tbody>
           </table>
         </div>
+        <div className="flex items-center justify-between text-xs text-slate-500 px-4 py-3 border-t border-slate-100 bg-slate-50/50">
+          <div>
+            Total <strong>{processedRecords.length}</strong> data presensi ditampilkan
+          </div>
+        </div>
       </div>
 
       {/* Modal Tambah/Edit Manual */}
@@ -414,9 +612,11 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                   onChange={e => setFormData({...formData, userId: e.target.value})}
                   className="w-full p-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#1F77C5] disabled:bg-slate-50 disabled:text-slate-500"
                 >
-                  <option value="">Pilih Karyawan...</option>
+                  <option value="">Pilih Karyawan / Pengguna...</option>
                   {staffUsers.map(u => (
-                    <option key={u.id} value={u.id}>{u.full_name}</option>
+                    <option key={u.id} value={u.id}>
+                      {u.full_name} {u.role && u.role !== 'STAFF' ? `(${u.role})` : ''}
+                    </option>
                   ))}
                 </select>
               </div>
