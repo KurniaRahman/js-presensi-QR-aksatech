@@ -183,7 +183,7 @@ export default async function DashboardPage() {
             </span>
             <span className="text-xs text-blue-300 font-bold hidden sm:inline">•</span>
             <span className="text-xs font-semibold text-[#1F77C5] bg-blue-50/80 px-2.5 py-0.5 rounded-full border border-blue-100">
-              Sistem Presensi PT Aksa Tech
+              Sistem Presensi Aksa Tech
             </span>
           </div>
 
@@ -192,7 +192,7 @@ export default async function DashboardPage() {
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-500 max-w-xl font-normal leading-relaxed">
-            Portal kehadiran & operasional kerja digital Aksa Tech. Pantau jam kerja harian dan lembur Anda secara real-time.
+            Portal kehadiran & operasional kerja digital Aksa Tech. Pantau jam kerja harian dan lembur Anda.
           </p>
         </div>
 
@@ -580,7 +580,7 @@ export default async function DashboardPage() {
               </div>
               <div>
                 <h3 className="font-black text-sm sm:text-base text-white">Ketentuan Jam Kerja</h3>
-                <p className="text-[11px] text-blue-200 font-medium">PT Aksa Tech Indonesia</p>
+                <p className="text-[11px] text-blue-200 font-medium">PT AKSA KARYA SATRIA ANGKASA</p>
               </div>
             </div>
 

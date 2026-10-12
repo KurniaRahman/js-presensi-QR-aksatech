@@ -271,22 +271,22 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
   return (
     <div className="space-y-6">
       {/* Controls Bar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between md:items-center">
+      <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col lg:flex-row gap-4 justify-between lg:items-center">
         <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-stretch sm:items-center">
-          <div className="flex items-center space-x-2 border border-slate-200 rounded-xl px-3 py-2 bg-slate-50">
+          <div className="flex items-center space-x-2 border border-slate-200 rounded-xl px-3.5 py-2 bg-slate-50/70">
             <CalendarIcon className="w-4 h-4 text-slate-500" />
             <input 
               type="date" 
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="bg-transparent text-sm focus:outline-none text-slate-700 font-medium"
+              className="bg-transparent text-xs sm:text-sm focus:outline-none text-slate-700 font-medium"
             />
-            <span className="text-slate-400">-</span>
+            <span className="text-slate-400 font-bold">-</span>
             <input 
               type="date" 
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="bg-transparent text-sm focus:outline-none text-slate-700 font-medium"
+              className="bg-transparent text-xs sm:text-sm focus:outline-none text-slate-700 font-medium"
             />
           </div>
           <div className="relative">
@@ -296,7 +296,7 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
               placeholder="Cari nama karyawan..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full sm:w-60 pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-[#1F77C5] transition-all bg-white"
+              className="w-full sm:w-60 pl-9 pr-4 py-2 text-xs sm:text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-[#1F77C5] transition-all bg-white"
             />
           </div>
           <div className="flex items-center space-x-1.5">
@@ -304,7 +304,7 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 focus:outline-none focus:border-[#1F77C5] cursor-pointer font-medium"
+              className="text-xs sm:text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 focus:outline-none focus:border-[#1F77C5] cursor-pointer font-medium"
             >
               <option value="ALL">Semua Status</option>
               <option value="HADIR">Hadir Saja</option>
@@ -325,32 +325,160 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
             </button>
           )}
 
-          <span className="text-xs bg-blue-50 text-[#1F77C5] font-semibold px-2.5 py-1 rounded-full border border-blue-100 self-center">
-            {processedRecords.length} Total
+          <span className="text-xs bg-blue-50 text-[#1F77C5] font-bold px-2.5 py-1 rounded-full border border-blue-200/60 self-center">
+            {processedRecords.length} Total Data
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5 self-start lg:self-center">
           <button 
             onClick={openAddModal}
-            className="flex items-center space-x-2 bg-[#1F77C5] hover:bg-[#1a64a6] text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm"
+            className="flex items-center space-x-2 bg-gradient-to-r from-[#103D6D] to-[#1F77C5] hover:from-[#0B2545] hover:to-[#155b99] text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-md shadow-blue-500/20 active:scale-[0.98]"
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Tambah Manual</span>
+            <span>Tambah Manual</span>
           </button>
           <button 
             onClick={handleExport}
             disabled={isLoading}
-            className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 shadow-sm"
+            className="flex items-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all disabled:opacity-50 shadow-md shadow-emerald-500/20 active:scale-[0.98]"
           >
             <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">Export Excel</span>
+            <span>Export Excel</span>
           </button>
         </div>
       </div>
 
-      {/* Data Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      {/* Mobile Card View (< md) */}
+      <div className="block md:hidden space-y-3">
+        {isLoading && processedRecords.length === 0 ? (
+          <div className="bg-white p-8 rounded-2xl border border-slate-200/90 text-center text-slate-400 text-sm shadow-sm">
+            Memuat data laporan absensi...
+          </div>
+        ) : processedRecords.length === 0 ? (
+          <div className="bg-white p-8 rounded-2xl border border-slate-200/90 text-center text-slate-400 text-sm shadow-sm">
+            Tidak ada data presensi pada rentang waktu ini.
+          </div>
+        ) : (
+          <div className="grid gap-3">
+            {processedRecords.map((record) => {
+              const approvedOt = record.overtime?.status === 'APPROVED' ? record.overtime.duration_hours : 0
+              const clockInDt = record.attendance?.clock_in ? new Date(record.attendance.clock_in) : null
+              const clockOutDt = record.attendance?.clock_out ? new Date(record.attendance.clock_out) : null
+              const effective = calculateEffectiveOvertime(record.dateStr || record.date, clockInDt, clockOutDt, approvedOt)
+              const formattedDate = new Date((record.dateStr || record.date) + "T00:00:00").toLocaleDateString('id-ID', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+              })
+
+              return (
+                <div key={record.id} className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-slate-800 text-sm">{record.user_name}</span>
+                        {record.user_role && record.user_role !== 'STAFF' && (
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                            record.user_role === 'ADMIN' 
+                              ? 'bg-purple-50 text-purple-700 border-purple-200' 
+                              : 'bg-blue-50 text-blue-700 border-blue-200'
+                          }`}>
+                            {record.user_role}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">{formattedDate}</p>
+                    </div>
+
+                    {record.attendance ? (
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                        record.attendance.status === 'HADIR' ? 'bg-green-50 text-green-700 border-green-200' : 
+                        record.attendance.status === 'SAKIT' ? 'bg-amber-50 text-amber-700 border-amber-200' : 
+                        record.attendance.status === 'IZIN' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
+                        'bg-red-50 text-red-700 border-red-200'
+                      }`}>
+                        {record.attendance.status}
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-400 border border-slate-200">-</span>
+                    )}
+                  </div>
+
+                  {/* Jam Masuk & Keluar Tiles */}
+                  <div className="grid grid-cols-2 gap-2 bg-slate-50/80 p-2.5 rounded-xl text-center text-xs border border-slate-100">
+                    <div>
+                      <p className="text-[10px] text-slate-400 font-medium">Jam Masuk</p>
+                      <p className="font-bold text-slate-800 mt-0.5">
+                        {record.attendance && record.attendance.status === 'HADIR'
+                          ? new Date(record.attendance.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
+                          : '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-400 font-medium">Jam Keluar</p>
+                      <p className="font-bold text-slate-800 mt-0.5">
+                        {record.attendance?.clock_out && record.attendance.status === 'HADIR'
+                          ? new Date(record.attendance.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
+                          : '-'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Lembur Info if any */}
+                  {effective.effectiveHours > 0 || approvedOt > 0 ? (
+                    <div className="p-2.5 bg-amber-50/70 border border-amber-200/70 rounded-xl flex items-center justify-between text-xs">
+                      <span className="font-semibold text-amber-900">
+                        Lembur {effective.isWeekend ? 'Weekend' : 'Weekday'}:
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-slate-800">{effective.effectiveHours} Jam</span>
+                        {effective.status === 'VALID' ? (
+                          <span className="text-emerald-700 bg-emerald-100/60 font-semibold px-2 py-0.5 rounded-full text-[10px] border border-emerald-200">
+                            ✓ Sesuai ACC
+                          </span>
+                        ) : (
+                          <span className="text-amber-700 bg-amber-100/60 font-semibold px-2 py-0.5 rounded-full text-[10px] border border-amber-200">
+                            {effective.badgeText}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100">
+                    <button
+                      onClick={() => handleEdit(record)}
+                      className="px-3 py-1.5 rounded-lg bg-blue-50 text-[#1F77C5] hover:bg-blue-100 font-semibold text-xs border border-blue-200/60 transition-colors flex items-center gap-1"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>Edit Jam</span>
+                    </button>
+                    {record.attendance?.id && (
+                      <button
+                        onClick={() => setDeleteTarget({
+                          id: record.attendance!.id!,
+                          name: record.user_name,
+                          dateStr: record.dateStr || new Date(record.date).toISOString().split('T')[0]
+                        })}
+                        className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 font-semibold text-xs border border-rose-200 transition-colors flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Hapus</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Data Table (>= md) */}
+      <div className="hidden md:block bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50 text-slate-700 text-xs uppercase font-semibold border-b border-slate-200">
@@ -434,11 +562,11 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                   const effective = calculateEffectiveOvertime(record.dateStr || record.date, clockInDt, clockOutDt, approvedOt)
 
                   return (
-                    <tr key={record.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-4 py-3 font-medium text-slate-800">
+                    <tr key={record.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="px-4 py-3.5 font-medium text-slate-800">
                         {new Date((record.dateStr || record.date) + "T00:00:00").toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3.5">
                         <div className="flex items-center space-x-1.5 flex-wrap">
                           <span className="font-semibold text-slate-800">{record.user_name}</span>
                           {record.user_role && record.user_role !== 'STAFF' && (
@@ -452,28 +580,28 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3.5">
                         {record.attendance ? (
-                          <span className={`px-2 py-1 rounded text-xs font-bold ${
-                            record.attendance.status === 'HADIR' ? 'bg-green-50 text-green-600' : 
-                            record.attendance.status === 'SAKIT' ? 'bg-amber-50 text-amber-600' : 
-                            record.attendance.status === 'IZIN' ? 'bg-blue-50 text-blue-600' : 
-                            'bg-red-50 text-red-600'
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
+                            record.attendance.status === 'HADIR' ? 'bg-green-50 text-green-700 border-green-200' : 
+                            record.attendance.status === 'SAKIT' ? 'bg-amber-50 text-amber-700 border-amber-200' : 
+                            record.attendance.status === 'IZIN' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
+                            'bg-red-50 text-red-700 border-red-200'
                           }`}>
                             {record.attendance.status}
                           </span>
                         ) : (
-                          <span className="px-2 py-1 rounded text-xs font-bold bg-slate-100 text-slate-500">-</span>
+                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-400 border border-slate-200">-</span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3.5 font-medium text-slate-700">
                         {record.attendance && record.attendance.status === 'HADIR' ? new Date(record.attendance.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '-'}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3.5 font-medium text-slate-700">
                         {record.attendance?.clock_out && record.attendance.status === 'HADIR' ? new Date(record.attendance.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '-'}
                       </td>
                       {/* Lembur Weekday */}
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-4 py-3.5 text-center">
                         {!effective.isWeekend ? (
                           effective.effectiveHours > 0 ? (
                             <div className="flex flex-col items-center gap-1">
@@ -492,7 +620,7 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                             <div className="flex flex-col items-center gap-1">
                               <span className="text-slate-400 font-medium text-sm">0 Jam</span>
                               {effective.status === 'NO_CLOCK_OUT' ? (
-                                <span className="inline-flex items-center text-[10px] font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full border border-red-200">
+                                <span className="inline-flex items-center text-[10px] font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
                                   Belum Pulang
                                 </span>
                               ) : (
@@ -509,7 +637,7 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                         )}
                       </td>
                       {/* Lembur Weekend */}
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-4 py-3.5 text-center">
                         {effective.isWeekend ? (
                           effective.effectiveHours > 0 ? (
                             <div className="flex flex-col items-center gap-1">
@@ -528,7 +656,7 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                             <div className="flex flex-col items-center gap-1">
                               <span className="text-slate-400 font-medium text-sm">0 Jam</span>
                               {effective.status === 'NO_CLOCK_OUT' ? (
-                                <span className="inline-flex items-center text-[10px] font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full border border-red-200">
+                                <span className="inline-flex items-center text-[10px] font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
                                   {effective.badgeText || "Belum Pulang"}
                                 </span>
                               ) : (
@@ -544,11 +672,11 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                           <span className="text-slate-300">-</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3.5 text-right">
                         <div className="flex items-center justify-end space-x-1">
                           <button 
                             onClick={() => handleEdit(record)}
-                            className="text-[#1F77C5] hover:text-[#155b99] transition-colors p-1.5 rounded hover:bg-blue-50"
+                            className="text-[#1F77C5] hover:text-[#155b99] transition-colors p-1.5 rounded-lg hover:bg-blue-50"
                             title="Edit Jam"
                           >
                             <Edit2 className="w-4 h-4" />
@@ -560,7 +688,7 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                                 name: record.user_name,
                                 dateStr: record.dateStr || new Date(record.date).toISOString().split('T')[0]
                               })}
-                              className="text-red-500 hover:text-red-700 transition-colors p-1.5 rounded hover:bg-red-50"
+                              className="text-rose-500 hover:text-rose-700 transition-colors p-1.5 rounded-lg hover:bg-rose-50"
                               title="Hapus Presensi"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -575,7 +703,7 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
             </tbody>
           </table>
         </div>
-        <div className="flex items-center justify-between text-xs text-slate-500 px-4 py-3 border-t border-slate-100 bg-slate-50/50">
+        <div className="flex items-center justify-between text-xs text-slate-500 px-5 py-3 border-t border-slate-100 bg-slate-50/50">
           <div>
             Total <strong>{processedRecords.length}</strong> data presensi ditampilkan
           </div>
@@ -584,33 +712,46 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
 
       {/* Modal Tambah/Edit Manual */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-100">
-              <h2 className="text-lg font-bold text-slate-800">{editMode ? 'Edit Data Manual' : 'Input Data Manual'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 relative">
+            {/* Top Stripe Gradient */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0B2545] via-[#1F77C5] to-sky-400" />
+
+            <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-100">
+              <div>
+                <h2 className="text-lg font-extrabold text-slate-800">
+                  {editMode ? 'Koreksi Data Presensi' : 'Input Data Presensi Manual'}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {editMode ? 'Ubah waktu atau status kehadiran karyawan terpilih.' : 'Tambahkan catatan presensi manual untuk karyawan.'}
+                </p>
+              </div>
+              <button 
+                onClick={() => setIsModalOpen(false)} 
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+            <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 max-h-[80vh] overflow-y-auto">
               {selectedRecordOvertime && (
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start space-x-2">
-                  <span className="font-bold text-amber-900">ℹ️ Info:</span>
+                  <span className="font-bold text-amber-900">ℹ️ Info Lembur:</span>
                   <span>
                     {isWeekendDay(formData.recordDate)
-                      ? `Karyawan ini memiliki pengajuan lembur Weekend yang disetujui (${selectedRecordOvertime} Jam). Jam lembur akhir pekan dihitung berdasarkan durasi jam masuk hingga jam keluar (maks. 8 jam).`
-                      : `Karyawan ini memiliki pengajuan lembur Weekday yang disetujui (${selectedRecordOvertime} Jam). Jam lembur hari kerja dihitung saat Jam Keluar terisi dan melewati pukul 17:00 (maks. 3 jam).`}
+                      ? `Karyawan memiliki lembur Weekend yang disetujui (${selectedRecordOvertime} Jam). Jam lembur dihitung berdasarkan jam masuk hingga jam keluar (maks. 8 jam).`
+                      : `Karyawan memiliki lembur Weekday yang disetujui (${selectedRecordOvertime} Jam). Jam lembur dihitung setelah pukul 17:00 (maks. 3 jam).`}
                   </span>
                 </div>
               )}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700">Karyawan</label>
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Karyawan</label>
                 <select 
                   required
                   disabled={editMode}
                   value={formData.userId}
                   onChange={e => setFormData({...formData, userId: e.target.value})}
-                  className="w-full p-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#1F77C5] disabled:bg-slate-50 disabled:text-slate-500"
+                  className="w-full p-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-[#1F77C5] disabled:bg-slate-50 disabled:text-slate-500 bg-white"
                 >
                   <option value="">Pilih Karyawan / Pengguna...</option>
                   {staffUsers.map(u => (
@@ -621,24 +762,24 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Tanggal</label>
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Tanggal</label>
                   <input 
                     type="date"
                     required
                     disabled={editMode}
                     value={formData.recordDate}
                     onChange={e => setFormData({...formData, recordDate: e.target.value})}
-                    className="w-full p-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#1F77C5] disabled:bg-slate-50 disabled:text-slate-500"
+                    className="w-full p-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-[#1F77C5] disabled:bg-slate-50 disabled:text-slate-500 bg-white"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Status Kehadiran</label>
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Status Kehadiran</label>
                   <select 
                     value={formData.attendanceStatus}
                     onChange={e => setFormData({...formData, attendanceStatus: e.target.value as any})}
-                    className="w-full p-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#1F77C5]"
+                    className="w-full p-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-[#1F77C5] bg-white font-medium"
                   >
                     <option value="">-- Kosong --</option>
                     <option value="HADIR">Hadir</option>
@@ -650,39 +791,44 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
               </div>
 
               {formData.attendanceStatus !== '' && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700">Jam Masuk</label>
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Jam Masuk</label>
                     <input 
                       type="time"
                       lang="en-GB"
                       value={formData.clockIn}
                       onChange={e => setFormData({...formData, clockIn: e.target.value})}
-                      className="w-full p-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#1F77C5]"
+                      className="w-full p-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-[#1F77C5] bg-white"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700">Jam Keluar (Opsional)</label>
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Jam Keluar</label>
                     <input 
                       type="time"
                       lang="en-GB"
                       value={formData.clockOut}
                       onChange={e => setFormData({...formData, clockOut: e.target.value})}
-                      className="w-full p-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#1F77C5]"
+                      className="w-full p-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-[#1F77C5] bg-white"
                     />
                   </div>
                 </div>
               )}
 
-
-
-              <div className="pt-4">
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2.5">
+                <button 
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-xs sm:text-sm font-semibold hover:bg-slate-50 transition-colors"
+                >
+                  Batal
+                </button>
                 <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="w-full bg-[#1F77C5] hover:bg-[#1a64a6] text-white py-2.5 rounded-lg font-bold transition-colors disabled:opacity-50"
+                  className="bg-gradient-to-r from-[#103D6D] to-[#1F77C5] hover:from-[#0B2545] hover:to-[#155b99] text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md shadow-blue-500/20 disabled:opacity-50 active:scale-[0.98]"
                 >
-                  {isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan'}
+                  {isSubmitting ? 'Menyimpan...' : 'Simpan Data'}
                 </button>
               </div>
             </form>
@@ -692,15 +838,16 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
 
       {/* Modal Konfirmasi Hapus */}
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden p-6 text-center space-y-4">
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-600">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center space-y-4 border border-slate-200 relative">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0B2545] via-[#1F77C5] to-sky-400" />
+            <div className="w-12 h-12 bg-rose-50 border border-rose-200 rounded-full flex items-center justify-center mx-auto text-rose-600">
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div className="space-y-1">
               <h3 className="text-lg font-bold text-slate-800">Hapus Data Presensi?</h3>
-              <p className="text-sm text-slate-500">
-                Apakah Anda yakin ingin menghapus data presensi untuk <strong className="text-slate-700">{deleteTarget.name}</strong> pada tanggal <strong className="text-slate-700">{new Date(deleteTarget.dateStr + "T00:00:00").toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>? Data ini akan dihapus dari sistem.
+              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                Apakah Anda yakin ingin menghapus catatan presensi untuk <strong className="text-slate-700">{deleteTarget.name}</strong> pada tanggal <strong className="text-slate-700">{new Date(deleteTarget.dateStr + "T00:00:00").toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>? Data ini akan dihapus permanen.
               </p>
             </div>
             <div className="flex items-center space-x-2 pt-2">
@@ -708,7 +855,7 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                 type="button"
                 disabled={isDeleting}
                 onClick={() => setDeleteTarget(null)}
-                className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium text-sm transition-colors"
+                className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs sm:text-sm transition-colors"
               >
                 Batal
               </button>
@@ -716,7 +863,7 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                 type="button"
                 disabled={isDeleting}
                 onClick={handleDelete}
-                className="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-sm transition-colors disabled:opacity-50"
+                className="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-colors disabled:opacity-50"
               >
                 {isDeleting ? "Menghapus..." : "Ya, Hapus"}
               </button>

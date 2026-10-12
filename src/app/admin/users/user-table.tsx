@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { UserFormDialog } from "./user-form-dialog"
 import { toggleUserStatus } from "./actions"
-import { Edit, UserX, UserCheck, Plus, Filter, RotateCcw } from "lucide-react"
+import { Edit, UserX, UserCheck, Plus, Filter, RotateCcw, Search, Mail, Shield, User as UserIcon } from "lucide-react"
 
 type User = {
   id: string
@@ -28,6 +28,7 @@ export function UserTable({ users }: { users: User[] }) {
   // Filter states
   const [roleFilter, setRoleFilter] = useState<string>("ALL")
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
+  const [mobileSearch, setMobileSearch] = useState("")
 
   const openAddForm = () => {
     setUserToEdit(null)
@@ -50,33 +51,61 @@ export function UserTable({ users }: { users: User[] }) {
   const resetFilters = () => {
     setRoleFilter("ALL")
     setStatusFilter("ALL")
+    setMobileSearch("")
   }
 
-  // Filter users based on role and status
+  // Filter users based on role and status (and mobileSearch for cards)
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
       if (roleFilter !== "ALL" && user.role !== roleFilter) return false
       if (statusFilter === "ACTIVE" && !user.is_active) return false
       if (statusFilter === "INACTIVE" && user.is_active) return false
+      if (mobileSearch) {
+        const query = mobileSearch.toLowerCase()
+        const matchName = user.full_name.toLowerCase().includes(query)
+        const matchEmail = user.email.toLowerCase().includes(query)
+        if (!matchName && !matchEmail) return false
+      }
       return true
     })
-  }, [users, roleFilter, statusFilter])
+  }, [users, roleFilter, statusFilter, mobileSearch])
 
   const columns = useMemo<ColumnDef<User>[]>(() => [
     {
       accessorKey: "full_name",
-      header: "Nama Lengkap",
-      cell: ({ row }) => (
-        <div className="font-semibold text-slate-800">
-          {row.original.full_name}
-        </div>
-      )
+      header: "Nama Pengguna",
+      cell: ({ row }) => {
+        const user = row.original
+        const initials = user.full_name
+          .split(" ")
+          .map((n) => n[0])
+          .slice(0, 2)
+          .join("")
+          .toUpperCase()
+
+        return (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#103D6D] to-[#1F77C5] text-white flex items-center justify-center font-bold text-xs shadow-sm flex-shrink-0">
+              {initials}
+            </div>
+            <div>
+              <div className="font-bold text-slate-800 text-sm">
+                {user.full_name}
+              </div>
+              <div className="text-slate-400 text-xs font-mono">
+                ID: {user.id.slice(0, 8)}...
+              </div>
+            </div>
+          </div>
+        )
+      }
     },
     {
       accessorKey: "email",
-      header: "Email",
+      header: "Email Akun",
       cell: ({ row }) => (
-        <span className="text-slate-600 font-mono text-xs">
+        <span className="text-slate-600 font-mono text-xs flex items-center gap-1.5">
+          <Mail className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
           {row.original.email}
         </span>
       )
@@ -92,8 +121,9 @@ export function UserTable({ users }: { users: User[] }) {
           "bg-slate-100 text-slate-700 border-slate-200"
         
         return (
-          <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${badgeClasses}`}>
-            {role}
+          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${badgeClasses}`}>
+            <Shield className="w-3 h-3" />
+            {role === "PM" ? "Project Manager" : role}
           </span>
         )
       }
@@ -103,11 +133,11 @@ export function UserTable({ users }: { users: User[] }) {
       header: "Status Akun",
       cell: ({ row }) => (
         row.original.is_active ? (
-          <span className="inline-flex items-center text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full text-xs font-medium">
+          <span className="inline-flex items-center text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full text-xs font-semibold">
             ● Aktif
           </span>
         ) : (
-          <span className="inline-flex items-center text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full text-xs font-medium">
+          <span className="inline-flex items-center text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full text-xs font-semibold">
             ○ Nonaktif
           </span>
         )
@@ -125,7 +155,7 @@ export function UserTable({ users }: { users: User[] }) {
               variant="outline" 
               size="sm"
               onClick={() => openEditForm(user)}
-              className="h-8 w-8 p-0 text-[#1F77C5] hover:text-[#155b99] hover:bg-blue-50 border-slate-200 rounded-lg"
+              className="h-8 w-8 p-0 text-[#1F77C5] hover:text-[#155b99] hover:bg-blue-50 border-slate-200 rounded-lg transition-colors"
               title="Edit Pengguna"
             >
               <Edit className="h-3.5 w-3.5" />
@@ -134,7 +164,7 @@ export function UserTable({ users }: { users: User[] }) {
               variant="outline"
               size="sm"
               onClick={() => setUserToToggle(user)}
-              className={`h-8 w-8 p-0 rounded-lg border-slate-200 ${
+              className={`h-8 w-8 p-0 rounded-lg border-slate-200 transition-colors ${
                 user.is_active 
                   ? "text-rose-600 hover:text-rose-700 hover:bg-rose-50" 
                   : "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
@@ -175,7 +205,7 @@ export function UserTable({ users }: { users: User[] }) {
         <option value="INACTIVE">Nonaktif Saja</option>
       </select>
 
-      {(roleFilter !== "ALL" || statusFilter !== "ALL") && (
+      {(roleFilter !== "ALL" || statusFilter !== "ALL" || mobileSearch) && (
         <button
           onClick={resetFilters}
           className="flex items-center space-x-1 text-xs text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2.5 py-2 rounded-xl transition-colors font-medium"
@@ -190,24 +220,128 @@ export function UserTable({ users }: { users: User[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center flex-wrap gap-2">
-        <div className="flex items-center space-x-2">
-          <h2 className="text-xl font-bold text-slate-800">Daftar Pengguna</h2>
-          <span className="text-xs bg-blue-50 text-[#1F77C5] font-semibold px-2.5 py-0.5 rounded-full border border-blue-100">
+      {/* Action Header Card */}
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm flex justify-between items-center flex-wrap gap-3">
+        <div className="flex items-center space-x-2.5">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-800">Daftar Akun Karyawan</h2>
+          <span className="text-xs bg-blue-50 text-[#1F77C5] font-bold px-2.5 py-0.5 rounded-full border border-blue-200/60">
             {filteredUsers.length} Total
           </span>
         </div>
-        <Button onClick={openAddForm} className="bg-[#1F77C5] hover:bg-[#155b99] rounded-xl text-sm font-semibold shadow-sm">
+        <Button 
+          onClick={openAddForm} 
+          className="bg-gradient-to-r from-[#103D6D] to-[#1F77C5] hover:from-[#0B2545] hover:to-[#155b99] text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-blue-500/20 active:scale-[0.98] transition-all"
+        >
           <Plus className="mr-1.5 h-4 w-4" /> Tambah Pengguna
         </Button>
       </div>
 
-      <DataTable 
-        columns={columns} 
-        data={filteredUsers} 
-        searchPlaceholder="Cari nama atau email..."
-        filterControls={filterControls}
-      />
+      {/* Desktop Table View */}
+      <div className="hidden md:block">
+        <DataTable 
+          columns={columns} 
+          data={filteredUsers} 
+          searchPlaceholder="Cari nama atau email pengguna..."
+          filterControls={filterControls}
+        />
+      </div>
+
+      {/* Mobile Responsive Cards View */}
+      <div className="block md:hidden space-y-3">
+        {/* Mobile Search & Filters */}
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input 
+              type="text"
+              placeholder="Cari nama atau email..."
+              value={mobileSearch}
+              onChange={(e) => setMobileSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-[#1F77C5] bg-white"
+            />
+          </div>
+          <div>{filterControls}</div>
+        </div>
+
+        {/* Mobile Cards List */}
+        {filteredUsers.length === 0 ? (
+          <div className="bg-white p-8 rounded-2xl border border-slate-200/90 text-center text-slate-400 text-sm shadow-sm">
+            Tidak ada pengguna yang cocok dengan kriteria filter.
+          </div>
+        ) : (
+          <div className="grid gap-3">
+            {filteredUsers.map((user) => {
+              const initials = user.full_name
+                .split(" ")
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase()
+
+              return (
+                <div key={user.id} className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#103D6D] to-[#1F77C5] text-white flex items-center justify-center font-bold text-xs shadow-sm flex-shrink-0">
+                        {initials}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800 text-sm leading-tight">{user.full_name}</p>
+                        <p className="text-xs text-slate-500 font-mono mt-0.5">{user.email}</p>
+                      </div>
+                    </div>
+
+                    {user.is_active ? (
+                      <span className="inline-flex items-center text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full text-[11px] font-semibold flex-shrink-0">
+                        ● Aktif
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full text-[11px] font-semibold flex-shrink-0">
+                        ○ Nonaktif
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                    <div>
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
+                        user.role === "ADMIN" ? "bg-purple-50 text-purple-700 border-purple-200" :
+                        user.role === "PM" ? "bg-blue-50 text-blue-700 border-blue-200" :
+                        "bg-slate-100 text-slate-700 border-slate-200"
+                      }`}>
+                        <Shield className="w-3 h-3" />
+                        {user.role === "PM" ? "Project Manager" : user.role}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => openEditForm(user)}
+                        className="px-3 py-1.5 rounded-lg bg-blue-50 text-[#1F77C5] hover:bg-blue-100 font-semibold text-xs border border-blue-200/60 transition-colors flex items-center gap-1"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                        <span>Edit</span>
+                      </button>
+
+                      <button
+                        onClick={() => setUserToToggle(user)}
+                        className={`px-3 py-1.5 rounded-lg font-semibold text-xs border transition-colors flex items-center gap-1 ${
+                          user.is_active
+                            ? "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100"
+                            : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                        }`}
+                      >
+                        {user.is_active ? <UserX className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+                        <span>{user.is_active ? "Nonaktifkan" : "Aktifkan"}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
 
       <UserFormDialog 
         open={isFormOpen} 
@@ -215,22 +349,28 @@ export function UserTable({ users }: { users: User[] }) {
         userToEdit={userToEdit} 
       />
 
+      {/* Confirmation Toggle Status Dialog */}
       <AlertDialog open={!!userToToggle} onOpenChange={(open) => !open && setUserToToggle(null)}>
-        <AlertDialogContent className="rounded-2xl">
+        <AlertDialogContent className="rounded-3xl p-6 border border-slate-200 shadow-xl overflow-hidden relative">
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0B2545] via-[#1F77C5] to-sky-400" />
           <AlertDialogHeader>
-            <AlertDialogTitle>
+            <AlertDialogTitle className="text-lg font-extrabold text-slate-800">
               {userToToggle?.is_active ? "Nonaktifkan Pengguna?" : "Aktifkan Pengguna?"}
             </AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="text-sm text-slate-500">
               {userToToggle?.is_active 
                 ? `Apakah Anda yakin ingin menonaktifkan akun ${userToToggle?.full_name}? Mereka tidak akan bisa login lagi ke dalam sistem.`
                 : `Apakah Anda yakin ingin mengaktifkan kembali akun ${userToToggle?.full_name}?`}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">Batal</AlertDialogCancel>
+          <AlertDialogFooter className="mt-4 gap-2">
+            <AlertDialogCancel className="rounded-xl border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs sm:text-sm">
+              Batal
+            </AlertDialogCancel>
             <AlertDialogAction 
-              className={`rounded-xl ${userToToggle?.is_active ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}`}
+              className={`rounded-xl font-semibold text-xs sm:text-sm text-white ${
+                userToToggle?.is_active ? "bg-rose-600 hover:bg-rose-700" : "bg-emerald-600 hover:bg-emerald-700"
+              }`}
               onClick={handleToggleStatus}
             >
               {isToggleLoading ? "Memproses..." : "Ya, Lanjutkan"}

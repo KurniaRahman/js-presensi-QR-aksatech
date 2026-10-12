@@ -184,14 +184,14 @@ export function UserHistoryView() {
   }, [data?.records, statusFilter, searchQuery, sortCol, sortDir])
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12">
-      {/* Header & Controls */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+    <div className="w-full space-y-6">
+      {/* Controls & Filter Panel */}
+      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Riwayat & Rekapitulasi Kerja</h1>
-            <p className="text-xs md:text-sm text-slate-500 mt-0.5">
-              Pantau rincian kehadiran, jam kerja, dan jam lembur.
+            <h2 className="text-base sm:text-lg font-bold text-slate-800 tracking-tight">Filter Periode & Status</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Pilih rentang tanggal atau gunakan pintasan waktu cepat di bawah.
             </p>
           </div>
 
@@ -199,19 +199,19 @@ export function UserHistoryView() {
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 text-xs">
             <button
               onClick={() => setQuickFilter('this_month')}
-              className="px-3 py-1.5 rounded-lg bg-blue-50 text-[#1F77C5] hover:bg-blue-100 font-medium whitespace-nowrap transition-colors"
+              className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-[#1F77C5] hover:bg-blue-100 font-semibold whitespace-nowrap transition-colors border border-blue-100"
             >
               Bulan Ini
             </button>
             <button
               onClick={() => setQuickFilter('last_month')}
-              className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium whitespace-nowrap transition-colors"
+              className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 font-semibold whitespace-nowrap transition-colors border border-slate-200/60"
             >
               Bulan Lalu
             </button>
             <button
               onClick={() => setQuickFilter('last_30_days')}
-              className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium whitespace-nowrap transition-colors"
+              className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 font-semibold whitespace-nowrap transition-colors border border-slate-200/60"
             >
               30 Hari Terakhir
             </button>
@@ -219,8 +219,8 @@ export function UserHistoryView() {
         </div>
 
         {/* Date Selector & Search */}
-        <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row gap-3 justify-between sm:items-center">
-          <div className="flex items-center space-x-2 border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 w-full sm:w-auto">
+        <div className="pt-3 border-t border-slate-100 flex flex-col lg:flex-row gap-3 justify-between lg:items-center">
+          <div className="flex items-center space-x-2 border border-slate-200 rounded-xl px-3.5 py-2 bg-slate-50/70 w-full lg:w-auto">
             <CalendarIcon className="w-4 h-4 text-slate-500 flex-shrink-0" />
             <input 
               type="date" 
@@ -228,7 +228,7 @@ export function UserHistoryView() {
               onChange={(e) => setStartDate(e.target.value)}
               className="bg-transparent text-xs sm:text-sm focus:outline-none text-slate-700 font-medium"
             />
-            <span className="text-slate-400">-</span>
+            <span className="text-slate-400 font-bold">-</span>
             <input 
               type="date" 
               value={endDate}
@@ -237,8 +237,8 @@ export function UserHistoryView() {
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1 sm:w-60">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="relative flex-1 sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input 
                 type="text"
@@ -283,9 +283,9 @@ export function UserHistoryView() {
 
       {/* Summary Cards */}
       {data && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Card 1: Total Kehadiran */}
-          <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 border-l-4 border-l-emerald-500 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kehadiran</span>
               <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -293,27 +293,27 @@ export function UserHistoryView() {
               </div>
             </div>
             <div className="mt-3">
-              <p className="text-2xl md:text-3xl font-extrabold text-slate-800">
-                {data.summary.hadirCount} <span className="text-xs md:text-sm font-medium text-slate-500">Hari</span>
+              <p className="text-2xl sm:text-3xl font-extrabold text-slate-800">
+                {data.summary.hadirCount} <span className="text-xs sm:text-sm font-medium text-slate-500">Hari</span>
               </p>
               <div className="flex items-center gap-1.5 mt-2 text-[10px] text-slate-500 flex-wrap">
-                {data.summary.sakitCount > 0 && <span className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded font-medium">Sakit: {data.summary.sakitCount}</span>}
-                {data.summary.izinCount > 0 && <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-medium">Izin: {data.summary.izinCount}</span>}
-                {data.summary.alphaCount > 0 && <span className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded font-medium">Alpha: {data.summary.alphaCount}</span>}
+                {data.summary.sakitCount > 0 && <span className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded font-medium border border-amber-200/50">Sakit: {data.summary.sakitCount}</span>}
+                {data.summary.izinCount > 0 && <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-medium border border-blue-200/50">Izin: {data.summary.izinCount}</span>}
+                {data.summary.alphaCount > 0 && <span className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded font-medium border border-red-200/50">Alpha: {data.summary.alphaCount}</span>}
               </div>
             </div>
           </div>
 
           {/* Card 2: Total Jam Kerja */}
-          <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 border-l-4 border-l-[#1F77C5] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Jam Kerja</span>
-              <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-blue-50 text-[#1F77C5] flex items-center justify-center">
                 <Briefcase className="w-4 h-4" />
               </div>
             </div>
             <div className="mt-3">
-              <p className="text-lg md:text-2xl font-extrabold text-slate-800 truncate" title={data.summary.totalWorkFormatted}>
+              <p className="text-lg sm:text-2xl font-extrabold text-slate-800 truncate" title={data.summary.totalWorkFormatted}>
                 {data.summary.totalWorkFormatted}
               </p>
               <p className="text-[11px] text-slate-400 mt-1">
@@ -323,7 +323,7 @@ export function UserHistoryView() {
           </div>
 
           {/* Card 3: Lembur Weekday */}
-          <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 border-l-4 border-l-indigo-500 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Lembur Weekday</span>
               <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
@@ -331,8 +331,8 @@ export function UserHistoryView() {
               </div>
             </div>
             <div className="mt-3">
-              <p className="text-2xl md:text-3xl font-extrabold text-indigo-700">
-                {data.summary.totalLemburWeekday} <span className="text-xs md:text-sm font-medium text-slate-500">Jam</span>
+              <p className="text-2xl sm:text-3xl font-extrabold text-indigo-700">
+                {data.summary.totalLemburWeekday} <span className="text-xs sm:text-sm font-medium text-slate-500">Jam</span>
               </p>
               <p className="text-[11px] text-slate-400 mt-1">
                 Setelah 17:00 (maks. 3j/hari)
@@ -341,7 +341,7 @@ export function UserHistoryView() {
           </div>
 
           {/* Card 4: Lembur Weekend */}
-          <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 border-l-4 border-l-purple-500 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Lembur Weekend</span>
               <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
@@ -349,8 +349,8 @@ export function UserHistoryView() {
               </div>
             </div>
             <div className="mt-3">
-              <p className="text-2xl md:text-3xl font-extrabold text-purple-700">
-                {data.summary.totalLemburWeekend} <span className="text-xs md:text-sm font-medium text-slate-500">Jam</span>
+              <p className="text-2xl sm:text-3xl font-extrabold text-purple-700">
+                {data.summary.totalLemburWeekend} <span className="text-xs sm:text-sm font-medium text-slate-500">Jam</span>
               </p>
               <p className="text-[11px] text-slate-400 mt-1">
                 Akhir pekan (maks. 8j/hari)
@@ -387,33 +387,35 @@ export function UserHistoryView() {
               })
 
               return (
-                <div key={item.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                <div key={item.id} className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm space-y-3 hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-bold text-slate-800">{formattedDate}</p>
-                      <span className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded mt-0.5 ${
-                        item.isWeekend ? 'bg-purple-50 text-purple-700' : 'bg-slate-100 text-slate-600'
+                      <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-0.5 border ${
+                        item.isWeekend 
+                          ? 'bg-purple-50 text-purple-700 border-purple-200' 
+                          : 'bg-slate-100 text-slate-600 border-slate-200'
                       }`}>
                         {item.isWeekend ? 'Akhir Pekan' : 'Hari Kerja'}
                       </span>
                     </div>
 
                     {item.attendance ? (
-                      <span className={`px-2 py-1 rounded text-xs font-bold ${
-                        item.attendance.status === 'HADIR' ? 'bg-green-50 text-green-600' : 
-                        item.attendance.status === 'SAKIT' ? 'bg-amber-50 text-amber-600' : 
-                        item.attendance.status === 'IZIN' ? 'bg-blue-50 text-blue-600' : 
-                        'bg-red-50 text-red-600'
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
+                        item.attendance.status === 'HADIR' ? 'bg-green-50 text-green-700 border-green-200' : 
+                        item.attendance.status === 'SAKIT' ? 'bg-amber-50 text-amber-700 border-amber-200' : 
+                        item.attendance.status === 'IZIN' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
+                        'bg-red-50 text-red-700 border-red-200'
                       }`}>
                         {item.attendance.status}
                       </span>
                     ) : (
-                      <span className="px-2 py-1 rounded text-xs font-bold bg-slate-100 text-slate-400">-</span>
+                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-400 border border-slate-200">-</span>
                     )}
                   </div>
 
                   {/* Jam Masuk & Jam Keluar */}
-                  <div className="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-xl text-center text-xs">
+                  <div className="grid grid-cols-3 gap-2 bg-slate-50/80 p-3 rounded-xl text-center text-xs border border-slate-100">
                     <div>
                       <p className="text-[10px] text-slate-400 font-medium">Masuk</p>
                       <p className="font-bold text-slate-800 mt-0.5">
@@ -438,7 +440,7 @@ export function UserHistoryView() {
 
                   {/* Lembur Section */}
                   {item.overtime && (
-                    <div className="p-3 bg-amber-50/70 border border-amber-100 rounded-xl space-y-1 text-xs">
+                    <div className="p-3 bg-amber-50/70 border border-amber-200/70 rounded-xl space-y-1 text-xs">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-amber-900 flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5 text-amber-600" />
@@ -448,14 +450,14 @@ export function UserHistoryView() {
                           {item.effectiveOvertime.effectiveHours} Jam
                         </span>
                       </div>
-                      <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1 border-t border-amber-100">
+                      <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1 border-t border-amber-200/50">
                         <span>Alasan: {item.overtime.reason}</span>
                         {item.effectiveOvertime.status === 'VALID' ? (
-                          <span className="text-emerald-700 bg-emerald-100/60 font-semibold px-1.5 py-0.2 rounded text-[10px]">
+                          <span className="text-emerald-700 bg-emerald-100/60 font-semibold px-2 py-0.5 rounded-full text-[10px] border border-emerald-200">
                             ✓ Sesuai ACC
                           </span>
                         ) : (
-                          <span className="text-amber-700 bg-amber-100/60 font-semibold px-1.5 py-0.2 rounded text-[10px]">
+                          <span className="text-amber-700 bg-amber-100/60 font-semibold px-2 py-0.5 rounded-full text-[10px] border border-amber-200">
                             {item.effectiveOvertime.badgeText}
                           </span>
                         )}
@@ -468,7 +470,7 @@ export function UserHistoryView() {
           </div>
 
           {/* Desktop Table View */}
-          <div className="hidden md:block bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="hidden md:block bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm text-slate-600">
                 <thead className="bg-slate-50 text-slate-700 text-xs uppercase font-semibold border-b border-slate-200">
