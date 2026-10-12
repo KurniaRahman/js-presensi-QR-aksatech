@@ -54,10 +54,7 @@ export default async function ReportsPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200/60">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  Administrator Console • Rekapitulasi & Audit
-                </span>
-                <span className="text-xs text-slate-400">
-                  PT Aksa Teknologi Nusantara
+                  Administrator • Rekapitulasi & Audit
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2.5">

@@ -49,10 +49,7 @@ export default async function AdminUsersPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200/60">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  Administrator Console • Master Data
-                </span>
-                <span className="text-xs text-slate-400">
-                  PT Aksa Teknologi Nusantara
+                  Administrator • Manajemen Pengguna
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2.5">
@@ -62,7 +59,7 @@ export default async function AdminUsersPage() {
                 Manajemen Pengguna & Akses
               </h1>
               <p className="text-sm text-slate-500 max-w-2xl leading-relaxed">
-                Kelola akun karyawan, tentukan peran (Staff, PM, Admin), serta kontrol status aktif/nonaktif untuk otorisasi sistem.
+                Kelola akun karyawan, tentukan peran, serta kontrol status aktif/nonaktif untuk otorisasi sistem.
               </p>
             </div>
 
