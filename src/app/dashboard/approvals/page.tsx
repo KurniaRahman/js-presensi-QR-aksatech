@@ -51,7 +51,7 @@ export default async function ApprovalsPage() {
           <div className="flex items-center gap-2.5 flex-wrap">
             <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-[#1F77C5] text-white shadow-xs shadow-blue-500/20 uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-blue-200" />
-              Project Manager Console
+              Project Manager
             </span>
             <span className="text-xs text-blue-300 font-bold hidden sm:inline">•</span>
             <span className="text-xs font-semibold text-[#1F77C5] bg-blue-50/80 px-2.5 py-0.5 rounded-full border border-blue-100">

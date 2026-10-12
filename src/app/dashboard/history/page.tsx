@@ -59,10 +59,7 @@ export default async function HistoryPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-[#1F77C5] border border-blue-200/60">
                   <History className="w-3.5 h-3.5" />
-                  Presensi Karyawan • {roleName}
-                </span>
-                <span className="text-xs text-slate-400">
-                  PT Aksa Teknologi Nusantara
+                  {roleName} • Presensi Karyawan 
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2.5">

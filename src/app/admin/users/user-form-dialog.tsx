@@ -90,7 +90,7 @@ export function UserFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xl overflow-hidden relative max-w-lg">
+        <DialogContent className="rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xl relative max-w-lg max-h-[90vh] overflow-y-auto">
           {/* Top Stripe Gradient */}
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0B2545] via-[#1F77C5] to-sky-400" />
 
