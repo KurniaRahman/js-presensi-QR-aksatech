@@ -24,17 +24,24 @@ export async function submitOvertime(formData: FormData) {
       return { success: false, message: "Durasi tidak valid" }
     }
 
-    if (duration > 3) {
-      return { success: false, message: "Maksimal lembur harian adalah 3 jam." }
+    const [y, m, d] = dateStr.split('-').map(Number)
+    const requestDateUtc = new Date(`${dateStr}T00:00:00.000Z`)
+    const day = new Date(y, m - 1, d).getDay()
+    const isWeekend = day === 0 || day === 6
+
+    if (isWeekend && duration > 8) {
+      return { success: false, message: "Maksimal lembur akhir pekan adalah 8 jam." }
+    }
+    if (!isWeekend && duration > 3) {
+      return { success: false, message: "Maksimal lembur hari kerja adalah 3 jam." }
     }
 
-    const requestDate = new Date(dateStr)
     const now = new Date()
 
     // Validasi backdate: hanya bulan berjalan
     if (
-      requestDate.getMonth() !== now.getMonth() ||
-      requestDate.getFullYear() !== now.getFullYear()
+      (m - 1) !== now.getMonth() ||
+      y !== now.getFullYear()
     ) {
       return { 
         success: false, 
@@ -43,26 +50,19 @@ export async function submitOvertime(formData: FormData) {
     }
 
     // Validasi future date
-    if (requestDate > now) {
-      // Jika tanggal pengajuan besok atau lusa, mungkin ditolak. Kita izinkan jika hanya jam berbeda.
-      // Tapi bandingkan tanpa time component.
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-      const requestDateOnly = new Date(requestDate.getFullYear(), requestDate.getMonth(), requestDate.getDate())
-      if (requestDateOnly > today) {
-        return { success: false, message: "Tidak dapat mengajukan lembur untuk tanggal di masa depan." }
-      }
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const requestDateOnly = new Date(y, m - 1, d)
+    if (requestDateOnly > today) {
+      return { success: false, message: "Tidak dapat mengajukan lembur untuk tanggal di masa depan." }
     }
 
     // Validasi Duplikasi: 1x per hari
-    const startOfDay = new Date(requestDate.getFullYear(), requestDate.getMonth(), requestDate.getDate())
-    const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000 - 1)
-
     const existingOvertime = await db.overtime.findFirst({
       where: {
         user_id: session.user.id,
-        request_date: {
-          gte: startOfDay,
-          lte: endOfDay,
+        request_date: requestDateUtc,
+        status: {
+          in: ["PENDING", "APPROVED"]
         }
       }
     })
@@ -75,7 +75,7 @@ export async function submitOvertime(formData: FormData) {
     await db.overtime.create({
       data: {
         user_id: session.user.id,
-        request_date: startOfDay,
+        request_date: requestDateUtc,
         duration_hours: duration,
         reason: reason,
         status: "PENDING"

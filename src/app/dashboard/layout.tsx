@@ -3,6 +3,7 @@ import { BottomNav } from "@/components/layout/bottom-nav"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { Home, ScanLine, Clock, FileText } from "lucide-react"
+import { SessionTimeoutWatcher } from "@/components/auth/session-timeout-watcher"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -28,6 +29,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <main className="flex-1 overflow-y-auto w-full relative">
         {children}
       </main>
+
+      <SessionTimeoutWatcher loginAt={session.user.loginAt} />
     </div>
   )
 }

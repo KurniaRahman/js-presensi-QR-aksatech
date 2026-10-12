@@ -28,7 +28,7 @@ export const attendanceColumns: ColumnDef<DashboardAttendance>[] = [
     accessorKey: "clock_in",
     header: "Waktu Masuk",
     cell: ({ row }) => {
-      return new Date(row.original.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+      return new Date(row.original.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
     },
   },
   {
@@ -36,7 +36,7 @@ export const attendanceColumns: ColumnDef<DashboardAttendance>[] = [
     header: "Waktu Keluar",
     cell: ({ row }) => {
       return row.original.clock_out 
-        ? new Date(row.original.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+        ? new Date(row.original.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
         : <span className="text-gray-400 italic">Belum Keluar</span>
     },
   },

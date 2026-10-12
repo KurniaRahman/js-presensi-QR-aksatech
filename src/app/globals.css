@@ -122,7 +122,13 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground select-none cursor-default;
+  }
+  input, textarea, select {
+    @apply select-auto cursor-text;
+  }
+  a, button, label {
+    @apply cursor-pointer;
   }
   html {
     @apply font-sans;

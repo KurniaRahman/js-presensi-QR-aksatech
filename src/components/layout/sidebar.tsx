@@ -54,9 +54,9 @@ export function Sidebar({ navItems, userName, hideMobile = false }: { navItems: 
         {/* Navigation Links */}
         <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
           {navItems.map((item) => {
-            // Exact match for dashboard to prevent it from always being active in sub-routes
-            const isActive = item.href === '/admin'
-              ? pathname === '/admin'
+            // Exact match for admin and dashboard to prevent them from always being active in sub-routes
+            const isActive = item.href === '/admin' || item.href === '/dashboard'
+              ? pathname === item.href
               : (pathname === item.href || pathname.startsWith(`${item.href}/`))
               
             return (

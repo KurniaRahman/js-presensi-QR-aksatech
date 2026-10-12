@@ -15,24 +15,18 @@ export async function processAttendance(qrCode: string) {
 
   const userId = session.user.id
 
-  // Dapatkan rentang waktu hari ini
-  const todayStart = new Date()
-  todayStart.setHours(0,0,0,0)
-  
-  const todayEnd = new Date()
-  todayEnd.setHours(23,59,59,999)
+  const now = new Date()
+  const y = now.getFullYear()
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const d = String(now.getDate()).padStart(2, '0')
+  const todayRecordDate = new Date(`${y}-${m}-${d}T00:00:00.000Z`)
 
   const existingAttendance = await db.attendance.findFirst({
     where: {
       user_id: userId,
-      record_date: {
-        gte: todayStart,
-        lte: todayEnd,
-      }
+      record_date: todayRecordDate
     }
   })
-
-  const now = new Date()
 
   // Cooldown check 15 menit
   if (existingAttendance) {
@@ -50,7 +44,7 @@ export async function processAttendance(qrCode: string) {
     await db.attendance.create({
       data: {
         user_id: userId,
-        record_date: now,
+        record_date: todayRecordDate,
         clock_in: now,
         status: "HADIR",
       }

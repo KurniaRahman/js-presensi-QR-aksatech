@@ -82,7 +82,7 @@ export default async function DashboardPage() {
               </div>
               <p className="text-[10px] md:text-xs text-slate-500 font-medium uppercase tracking-wider mb-0.5 md:mb-1">Jam Masuk</p>
               <p className="text-base md:text-xl font-bold text-slate-900">
-                {todayAttendance?.clock_in ? todayAttendance.clock_in.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                {todayAttendance?.clock_in ? todayAttendance.clock_in.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '--:--'}
               </p>
             </div>
 
@@ -92,7 +92,7 @@ export default async function DashboardPage() {
               </div>
               <p className="text-[10px] md:text-xs text-slate-500 font-medium uppercase tracking-wider mb-0.5 md:mb-1">Jam Keluar</p>
               <p className="text-base md:text-xl font-bold text-slate-900">
-                {todayAttendance?.clock_out ? todayAttendance.clock_out.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                {todayAttendance?.clock_out ? todayAttendance.clock_out.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '--:--'}
               </p>
             </div>
           </div>

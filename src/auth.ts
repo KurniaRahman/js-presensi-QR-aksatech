@@ -3,7 +3,17 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
+const SESSION_MAX_AGE = 2 * 60 * 60 // 2 Jam (7200 detik)
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  session: {
+    strategy: "jwt",
+    maxAge: SESSION_MAX_AGE,
+    updateAge: SESSION_MAX_AGE,
+  },
+  jwt: {
+    maxAge: SESSION_MAX_AGE,
+  },
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -44,16 +54,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     jwt({ token, user }) {
+      const now = Math.floor(Date.now() / 1000)
       if (user) {
         token.role = user.role
         token.id = user.id
+        token.loginAt = now
       }
+
+      // Validasi mutlak batas 2 jam sejak login
+      if (token.loginAt && now - (token.loginAt as number) > SESSION_MAX_AGE) {
+        return null
+      }
+
       return token
     },
     session({ session, token }) {
+      if (!token || !token.id) {
+        return null as any
+      }
       if (session.user) {
         session.user.role = token.role as string
         session.user.id = token.id as string
+        session.user.loginAt = token.loginAt as number
       }
       return session
     }

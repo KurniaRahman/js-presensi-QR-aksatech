@@ -18,7 +18,7 @@ export function DigitalClock() {
   return (
     <div className="text-center">
       <h2 className="text-3xl font-bold tracking-tight text-slate-900">
-        {time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+        {time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
       </h2>
       <p className="text-xs text-slate-500 font-medium mt-0.5">
         {time.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
