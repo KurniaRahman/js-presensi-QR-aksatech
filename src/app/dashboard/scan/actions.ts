@@ -5,11 +5,29 @@ import { prisma as db } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { isWeekendDay } from "@/lib/attendance-utils"
 import { syncAlphaAttendance } from "@/lib/sync-alpha"
+import { validateUserOfficeLocation } from "@/lib/geo-utils"
 
-export async function processAttendance(qrCode: string) {
+export async function processAttendance(qrCode: string, latitude?: number, longitude?: number) {
   const session = await auth()
   if (!session?.user?.id) return { success: false, message: "Sesi telah habis, silakan login kembali." }
-  
+
+  // 1. Validasi Keberadaan Koordinat GPS
+  if (latitude === undefined || longitude === undefined || isNaN(latitude) || isNaN(longitude)) {
+    return { 
+      success: false, 
+      message: "Koordinat lokasi tidak terdeteksi. Harap pastikan GPS dan izin lokasi browser aktif." 
+    }
+  }
+
+  // 2. Validasi Geofence Radius Kantor Aksa Tech
+  const geoCheck = await validateUserOfficeLocation(latitude, longitude)
+  if (!geoCheck.allowed) {
+    return {
+      success: false,
+      message: `Presensi ditolak. Anda berada di luar radius kantor (${geoCheck.distanceMeters.toLocaleString('id-ID')} m dari kantor. Batas toleransi: ${geoCheck.allowedRadiusMeters} m).`
+    }
+  }
+
   const cleanQr = qrCode.trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '')
   if (cleanQr !== "AKSA_TECH_ATTENDANCE") {
     return { success: false, message: "QR Code tidak valid atau bukan milik sistem presensi Aksa Tech!" }
