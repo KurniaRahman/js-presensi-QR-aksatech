@@ -204,69 +204,6 @@ export default async function AdminDashboardPage() {
 
       </div>
 
-      {/* 3. Quick Action Shortcuts for Admin */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <Link
-          href="/admin/scan"
-          className="p-4 rounded-2xl bg-white border border-blue-200/80 hover:border-[#1F77C5] hover:bg-gradient-to-br hover:from-white hover:to-blue-50/60 hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3.5 group shadow-2xs"
-        >
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1F77C5] border border-blue-200/80 flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xs flex-shrink-0">
-            <ScanLine className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="font-black text-slate-800 text-xs sm:text-sm group-hover:text-[#1F77C5] transition-colors">
-              Scan Presensi
-            </p>
-            <p className="text-[10px] text-slate-400 font-medium">Buka pemindai QR</p>
-          </div>
-        </Link>
-
-        <Link
-          href="/admin/users"
-          className="p-4 rounded-2xl bg-white border border-blue-200/80 hover:border-[#1F77C5] hover:bg-gradient-to-br hover:from-white hover:to-blue-50/60 hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3.5 group shadow-2xs"
-        >
-          <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 border border-sky-200/80 flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xs flex-shrink-0">
-            <Users className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="font-black text-slate-800 text-xs sm:text-sm group-hover:text-[#1F77C5] transition-colors">
-              Data Karyawan
-            </p>
-            <p className="text-[10px] text-slate-400 font-medium">Kelola akun staf</p>
-          </div>
-        </Link>
-
-        <Link
-          href="/admin/overtime"
-          className="p-4 rounded-2xl bg-white border border-amber-200/80 hover:border-amber-500 hover:bg-gradient-to-br hover:from-white hover:to-amber-50/60 hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3.5 group shadow-2xs"
-        >
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xs flex-shrink-0">
-            <Clock className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="font-black text-slate-800 text-xs sm:text-sm group-hover:text-amber-600 transition-colors">
-              Kelola Lembur
-            </p>
-            <p className="text-[10px] text-slate-400 font-medium">Approval pengajuan</p>
-          </div>
-        </Link>
-
-        <Link
-          href="/admin/reports"
-          className="p-4 rounded-2xl bg-white border border-purple-200/80 hover:border-purple-500 hover:bg-gradient-to-br hover:from-white hover:to-purple-50/60 hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3.5 group shadow-2xs"
-        >
-          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 border border-purple-200/80 flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xs flex-shrink-0">
-            <FileDown className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="font-black text-slate-800 text-xs sm:text-sm group-hover:text-purple-600 transition-colors">
-              Laporan Absensi
-            </p>
-            <p className="text-[10px] text-slate-400 font-medium">Rekapitulasi berkala</p>
-          </div>
-        </Link>
-      </div>
-
       {/* 4. Real-time Attendances Table Card */}
       <div className="bg-white rounded-3xl shadow-[0_4px_25px_-5px_rgba(31,119,197,0.06)] border border-slate-200/90 overflow-hidden relative">
         {/* Top Accent Stripe */}
