@@ -41,13 +41,13 @@ export function Sidebar({
       {/* Mobile Top Bar */}
       {!hideMobile && (
         <div className="md:hidden flex items-center justify-between bg-white border-b border-slate-200/80 px-4 py-3 shadow-xs">
-          <div className="flex items-center gap-2">
+          <Link href={userRole === 'Administrator' ? "/admin" : "/dashboard"} className="flex items-center gap-2">
             <img 
               src="/logo.png" 
               alt="Aksa Tech" 
               className="h-7 w-auto object-contain" 
             />
-          </div>
+          </Link>
           <button 
             onClick={() => setIsOpen(!isOpen)} 
             className="p-2 rounded-xl text-slate-600 hover:text-[#1F77C5] hover:bg-slate-100 transition-colors focus:outline-none"
@@ -73,14 +73,25 @@ export function Sidebar({
         } md:relative md:translate-x-0 ${hideMobile ? 'hidden md:flex' : ''}`}
       >
         {/* Logo Area (Dominan Putih & Menyatu Alami) */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-center">
-          <Link href="/dashboard" className="transition-transform hover:scale-[1.02] flex items-center justify-center">
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+          <Link 
+            href={userRole === 'Administrator' ? "/admin" : "/dashboard"} 
+            onClick={() => setIsOpen(false)}
+            className="transition-transform hover:scale-[1.02] flex items-center justify-center flex-1"
+          >
             <img 
               src="/logo.png" 
               alt="Aksa Tech - The Farthest Unmanned Technology" 
               className="h-9 w-auto object-contain" 
             />
           </Link>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            aria-label="Tutup menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         {/* Navigation Links */}

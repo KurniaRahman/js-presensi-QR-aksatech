@@ -1,5 +1,4 @@
 import { Sidebar } from "@/components/layout/sidebar"
-import { BottomNav } from "@/components/layout/bottom-nav"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { Home, ScanLine, Clock, FileText } from "lucide-react"
@@ -22,14 +21,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   ]
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-slate-50 overflow-hidden pb-16 md:pb-0">
+    <div className="flex flex-col md:flex-row h-screen bg-slate-50 overflow-hidden">
       <Sidebar 
         navItems={userNavItems} 
         userName={session.user.name || session.user.email || "Karyawan"} 
         userRole={session.user.role === 'PM' ? 'Project Manager' : session.user.role || 'Staff'} 
-        hideMobile={true} 
       />
-      <BottomNav navItems={userNavItems} />
 
       <main className="flex-1 overflow-y-auto w-full relative">
         {children}
