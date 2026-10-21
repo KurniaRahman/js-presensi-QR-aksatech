@@ -39,7 +39,24 @@ async function main() {
     },
   })
 
-  console.log('Seeding completed.')
+  // Inisialisasi Titik Geofence Kantor PT Aksa Tech Indonesia
+  await prisma.systemSetting.upsert({
+    where: { key: 'OFFICE_LATITUDE' },
+    update: { value: '-7.877989458768671' },
+    create: { key: 'OFFICE_LATITUDE', value: '-7.877989458768671' },
+  })
+  await prisma.systemSetting.upsert({
+    where: { key: 'OFFICE_LONGITUDE' },
+    update: { value: '110.31851240674597' },
+    create: { key: 'OFFICE_LONGITUDE', value: '110.31851240674597' },
+  })
+  await prisma.systemSetting.upsert({
+    where: { key: 'OFFICE_RADIUS_METERS' },
+    update: { value: '100' },
+    create: { key: 'OFFICE_RADIUS_METERS', value: '100' },
+  })
+
+  console.log('Seeding completed: Default Users & Office Geofence Coordinates initialized.')
 }
 
 main()

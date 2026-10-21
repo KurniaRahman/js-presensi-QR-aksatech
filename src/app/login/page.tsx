@@ -89,6 +89,15 @@ export default async function LoginPage({
           </div>
         </div>
 
+        {/* Desktop Footer Credit */}
+        <div className="hidden md:flex absolute bottom-8 left-8 lg:left-20 xl:left-28 items-center gap-3 text-xs text-slate-400 select-none">
+          <p>© {new Date().getFullYear()} PT Aksa Tech. All rights reserved.</p>
+          <span className="text-slate-300">•</span>
+          <div className="flex items-center gap-1.5 text-slate-400">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Sistem Presensi Aman</span>
+          </div>
+        </div>
       </div>
 
       {/* Right Side - Illustration (Tetap Penuh di Desktop seperti Semula) */}

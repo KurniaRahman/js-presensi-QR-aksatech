@@ -13,30 +13,41 @@ import {
   SunMedium, 
   ShieldCheck, 
   Lock,
-  MapPinOff
+  MapPinOff,
+  FlaskConical
 } from "lucide-react"
+
+// Koordinat resmi kantor PT Aksa Tech (sama dengan DEFAULT_OFFICE_COORDINATES di geo-utils.ts)
+const OFFICE_LAT = -7.877989458768671
+const OFFICE_LNG = 110.31851240674597
+
+const IS_DEV = process.env.NODE_ENV !== 'production'
 
 export function ScannerClient({ redirectUrl = '/dashboard' }: { redirectUrl?: string }) {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null)
   const [userLocation, setUserLocation] = useState<GeoLocationState | null>(null)
+  const [simulateOffice, setSimulateOffice] = useState(false)
   const router = useRouter()
 
-  const canScan = userLocation?.isInside === true
+  // Jika mode simulasi aktif, anggap selalu berada di dalam kantor
+  const canScan = simulateOffice || userLocation?.isInside === true
 
   const handleScan = async (detectedCodes: any[]) => {
-    if (loading || detectedCodes.length === 0 || !canScan || !userLocation) return
-    const qrValue = detectedCodes[0].rawValue
+    if (loading || detectedCodes.length === 0 || !canScan) return
+    // Saat simulasi aktif, tidak perlu userLocation GPS asli
+    if (!simulateOffice && !userLocation) return
 
+    const qrValue = detectedCodes[0].rawValue
     if (!qrValue) return
+
+    // Gunakan koordinat kantor saat mode simulasi, GPS asli jika tidak
+    const lat = simulateOffice ? OFFICE_LAT : userLocation!.latitude
+    const lng = simulateOffice ? OFFICE_LNG : userLocation!.longitude
 
     setLoading(true)
     try {
-      const res = await processAttendance(
-        qrValue,
-        userLocation.latitude,
-        userLocation.longitude
-      )
+      const res = await processAttendance(qrValue, lat, lng)
       if (res.success) {
         console.log("✅ [SCAN SUCCESS] Berhasil memproses QR Code:", qrValue)
         console.log("Server Response:", res.message)
@@ -102,6 +113,67 @@ export function ScannerClient({ redirectUrl = '/dashboard' }: { redirectUrl?: st
         </div>
       )}
 
+      {/* DEV ONLY: Banner Simulasi Berada di Kantor */}
+      {IS_DEV && (
+        <div className={`rounded-2xl border-2 transition-all duration-300 ${
+          simulateOffice
+            ? 'bg-amber-50 border-amber-400 shadow-md shadow-amber-200/50'
+            : 'bg-slate-50 border-slate-200'
+        }`}>
+          <div className="flex items-center justify-between p-3.5 sm:p-4 gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+                simulateOffice ? 'bg-amber-400 text-white' : 'bg-slate-200 text-slate-500'
+              }`}>
+                <FlaskConical className="w-4.5 h-4.5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[11px] font-black tracking-widest uppercase text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-md border border-amber-200">
+                    DEV ONLY
+                  </span>
+                  <h4 className="text-xs sm:text-sm font-extrabold text-slate-800">
+                    Simulasi Berada di Kantor
+                  </h4>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-0.5 leading-tight">
+                  {simulateOffice
+                    ? '⚠️ Aktif — koordinat kantor dikirim ke server sebagai pengganti GPS.'
+                    : 'Toggle untuk bypass geofencing GPS (hanya tampil di lingkungan development).'}
+                </p>
+              </div>
+            </div>
+
+            {/* Toggle Switch */}
+            <button
+              onClick={() => setSimulateOffice(prev => !prev)}
+              aria-label="Toggle simulasi kantor"
+              className={`relative flex-shrink-0 w-12 h-6 rounded-full border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 ${
+                simulateOffice
+                  ? 'bg-amber-400 border-amber-400'
+                  : 'bg-slate-200 border-slate-300'
+              }`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-md transition-transform duration-300 ${
+                simulateOffice ? 'translate-x-6' : 'translate-x-0'
+              }`} />
+            </button>
+          </div>
+
+          {/* Strip peringatan saat aktif */}
+          {simulateOffice && (
+            <div className="px-4 pb-3 pt-0">
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-100 border border-amber-300">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-700 flex-shrink-0" />
+                <p className="text-[11px] font-semibold text-amber-800 leading-tight">
+                  Mode simulasi AKTIF. Scan akan tercatat menggunakan koordinat kantor PT Aksa Tech. Matikan sebelum production.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 2. Layout Opsi A: 2 Kolom di Desktop (lg:), Kamera di Atas saat Mobile */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         
@@ -148,14 +220,18 @@ export function ScannerClient({ redirectUrl = '/dashboard' }: { redirectUrl?: st
             {/* Status Badge Live Kamera */}
             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
               <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase backdrop-blur-md text-white border flex items-center gap-1.5 shadow-xs ${
-                canScan 
-                  ? "bg-black/60 border-white/20" 
+                canScan
+                  ? simulateOffice
+                    ? "bg-amber-500/80 border-amber-300/30"
+                    : "bg-black/60 border-white/20"
                   : "bg-rose-950/70 border-rose-400/30 text-rose-200"
               }`}>
                 <span className={`w-2 h-2 rounded-full ${
-                  canScan ? "bg-emerald-400 animate-pulse" : "bg-rose-400"
-                }`}></span>
-                {canScan ? "Kamera Aktif" : "Pemindai Ditangguhkan"}
+                  canScan ? "bg-white animate-pulse" : "bg-rose-400"
+                }`} />
+                {canScan
+                  ? simulateOffice ? "Mode Simulasi" : "Kamera Aktif"
+                  : "Pemindai Ditangguhkan"}
               </span>
             </div>
 
@@ -167,7 +243,7 @@ export function ScannerClient({ redirectUrl = '/dashboard' }: { redirectUrl?: st
                 </div>
                 <div className="text-center space-y-1">
                   <p className="text-sm font-bold text-white tracking-wide">
-                    Memverifikasi QR & Lokasi GPS...
+                    Memverifikasi QR {simulateOffice ? '(Simulasi Kantor)' : '& Lokasi GPS'}...
                   </p>
                   <p className="text-xs text-slate-400">
                     Menghubungkan ke server absensi Aksa Tech
@@ -203,6 +279,15 @@ export function ScannerClient({ redirectUrl = '/dashboard' }: { redirectUrl?: st
               </div>
             ) : (
               <div className="h-full w-full relative">
+                {simulateOffice && (
+                  <div className="absolute inset-x-0 bottom-0 z-10 pointer-events-none">
+                    <div className="mx-3 mb-3 px-2.5 py-1.5 rounded-xl bg-amber-500/80 backdrop-blur-md border border-amber-300/30 text-center">
+                      <p className="text-[10px] font-bold text-white tracking-wide uppercase">
+                        🧪 Simulasi Kantor Aktif
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <Scanner
                   onScan={handleScan}
                   formats={["qr_code"]}

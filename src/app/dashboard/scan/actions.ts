@@ -28,7 +28,7 @@ export async function processAttendance(qrCode: string, latitude?: number, longi
     }
   }
 
-  const cleanQr = qrCode.trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '')
+  const cleanQr = qrCode.trim().replace(/^["']+|["']+$/g, '')
   if (cleanQr !== "AKSA_TECH_ATTENDANCE") {
     return { success: false, message: "QR Code tidak valid atau bukan milik sistem presensi Aksa Tech!" }
   }
@@ -86,17 +86,24 @@ export async function processAttendance(qrCode: string, latitude?: number, longi
 
   // Jika belum absen hari ini -> CLOCK IN
   if (!existingAttendance) {
-    await db.attendance.create({
-      data: {
-        user_id: userId,
-        record_date: todayRecordDate,
-        clock_in: now,
-        status: "HADIR",
+    try {
+      await db.attendance.create({
+        data: {
+          user_id: userId,
+          record_date: todayRecordDate,
+          clock_in: now,
+          status: "HADIR",
+        }
+      })
+      revalidatePath('/dashboard')
+      revalidatePath('/admin')
+      return { success: true, message: "Berhasil Clock-In! Selamat bekerja." }
+    } catch (err: any) {
+      if (err.code === 'P2002' || err.message?.includes('Unique constraint failed') || err.message?.includes('unique constraint')) {
+        return { success: false, message: "Presensi hari ini sudah tercatat (duplikasi dicegah oleh sistem)." }
       }
-    })
-    revalidatePath('/dashboard')
-    revalidatePath('/admin')
-    return { success: true, message: "Berhasil Clock-In! Selamat bekerja." }
+      throw err
+    }
   }
 
   // Jika sudah clock-in tapi belum clock-out -> CLOCK OUT
