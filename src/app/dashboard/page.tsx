@@ -56,17 +56,6 @@ export default async function DashboardPage() {
   const todayStart = new Date(`${todayStr}T00:00:00.000Z`)
   const todayEnd = new Date(`${todayStr}T23:59:59.999Z`)
 
-  // Ambil presensi hari ini
-  const todayAttendance = await db.attendance.findFirst({
-    where: {
-      user_id: session.user.id,
-      record_date: {
-        gte: todayStart,
-        lte: todayEnd,
-      }
-    }
-  })
-
   // Rentang bulan berjalan (1 s/d akhir bulan) dalam WIB
   const [currentYearStr, currentMonthStr] = todayStr.split('-')
   const currentYear = parseInt(currentYearStr, 10)
@@ -75,7 +64,17 @@ export default async function DashboardPage() {
   const lastDateNum = new Date(currentYear, currentMonth, 0).getDate()
   const lastDayOfMonth = new Date(`${currentYearStr}-${currentMonthStr}-${String(lastDateNum).padStart(2, '0')}T23:59:59.999Z`)
 
-  const [monthAttendances, monthOvertimes, recentAttendances] = await Promise.all([
+  // Ambil presensi hari ini dan metrik bulan berjalan secara paralel
+  const [todayAttendance, monthAttendances, monthOvertimes, recentAttendances] = await Promise.all([
+    db.attendance.findFirst({
+      where: {
+        user_id: session.user.id,
+        record_date: {
+          gte: todayStart,
+          lte: todayEnd,
+        }
+      }
+    }),
     db.attendance.findMany({
       where: {
         user_id: session.user.id,

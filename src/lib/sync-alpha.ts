@@ -20,13 +20,14 @@ export async function syncAlphaAttendance(startDateStr?: string, endDateStr?: st
     })
     const currentHour = parseInt(formatterHour.format(now), 10) // 0 - 23
 
-    // Default rentang: 30 hari ke belakang sampai hari ini
+    // Default rentang: jika dipanggil tanpa parameter (misal saat buka dashboard),
+    // periksa 2 hari terakhir (kemarin & hari ini) agar proses cepat dan ringan.
     let startStr = startDateStr
     let endStr = endDateStr
 
     if (!startStr || !endStr) {
       const defaultStart = new Date(now)
-      defaultStart.setDate(defaultStart.getDate() - 30)
+      defaultStart.setDate(defaultStart.getDate() - 2)
       startStr = formatterDate.format(defaultStart)
       endStr = todayStr
     }
