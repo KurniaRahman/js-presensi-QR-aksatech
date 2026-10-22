@@ -1,6 +1,7 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
+import { formatTimeWIB } from "@/lib/attendance-utils"
 
 export type DashboardAttendance = {
   id: string
@@ -52,7 +53,7 @@ export const attendanceColumns: ColumnDef<DashboardAttendance>[] = [
       }
       return (
         <span className="font-mono text-xs font-medium text-slate-700">
-          {new Date(row.original.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })}
+          {formatTimeWIB(row.original.clock_in)}
         </span>
       )
     },
@@ -74,7 +75,7 @@ export const attendanceColumns: ColumnDef<DashboardAttendance>[] = [
       return (
         <div className="flex items-center gap-1.5">
           <span className="font-mono text-xs font-medium text-slate-700">
-            {new Date(clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })}
+            {formatTimeWIB(clock_out)}
           </span>
           {/* Badge khusus jika auto-checkout oleh sistem */}
           {auto_checkout && (

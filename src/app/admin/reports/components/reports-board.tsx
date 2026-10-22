@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { getDailyRecords, getReportData, saveDailyRecord, deleteAttendanceRecord } from "@/actions/admin-attendance"
-import { calculateEffectiveOvertime, isWeekendDay } from "@/lib/attendance-utils"
+import { calculateEffectiveOvertime, isWeekendDay, formatTimeWIB } from "@/lib/attendance-utils"
 import { Search, Download, Plus, Calendar as CalendarIcon, X, Edit2, Trash2, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, Filter, RotateCcw } from "lucide-react"
 import * as XLSX from "xlsx"
 
@@ -195,10 +195,10 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
     
     if (record.attendance) {
       const cInDate = new Date(record.attendance.clock_in)
-      cIn = `${cInDate.getHours().toString().padStart(2, '0')}:${cInDate.getMinutes().toString().padStart(2, '0')}`
+      cIn = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', hour12: false }).format(cInDate)
       if (record.attendance.clock_out) {
         const cOutDate = new Date(record.attendance.clock_out)
-        cOut = `${cOutDate.getHours().toString().padStart(2, '0')}:${cOutDate.getMinutes().toString().padStart(2, '0')}`
+        cOut = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', hour12: false }).format(cOutDate)
       } else {
         cOut = ""
       }
@@ -412,7 +412,7 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                       <p className="text-[10px] text-slate-400 font-medium">Jam Masuk</p>
                       <p className="font-bold text-slate-800 mt-0.5">
                         {record.attendance && record.attendance.status === 'HADIR'
-                          ? new Date(record.attendance.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
+                          ? formatTimeWIB(record.attendance.clock_in, '-')
                           : '-'}
                       </p>
                     </div>
@@ -420,7 +420,7 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                       <p className="text-[10px] text-slate-400 font-medium">Jam Keluar</p>
                       <p className="font-bold text-slate-800 mt-0.5">
                         {record.attendance?.clock_out && record.attendance.status === 'HADIR'
-                          ? new Date(record.attendance.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
+                          ? formatTimeWIB(record.attendance.clock_out, '-')
                           : '-'}
                       </p>
                     </div>
@@ -595,10 +595,10 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                         )}
                       </td>
                       <td className="px-4 py-3.5 font-medium text-slate-700">
-                        {record.attendance && record.attendance.status === 'HADIR' ? new Date(record.attendance.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '-'}
+                        {record.attendance && record.attendance.status === 'HADIR' ? formatTimeWIB(record.attendance.clock_in, '-') : '-'}
                       </td>
                       <td className="px-4 py-3.5 font-medium text-slate-700">
-                        {record.attendance?.clock_out && record.attendance.status === 'HADIR' ? new Date(record.attendance.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '-'}
+                        {record.attendance?.clock_out && record.attendance.status === 'HADIR' ? formatTimeWIB(record.attendance.clock_out, '-') : '-'}
                       </td>
                       {/* Lembur Weekday */}
                       <td className="px-4 py-3.5 text-center">

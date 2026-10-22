@@ -11,6 +11,36 @@ export interface EffectiveOvertimeResult {
   weekendHours: number
 }
 
+export function getDateStringWIB(date: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(date)
+}
+
+export function formatTimeWIB(date: Date | string | null | undefined, fallback: string = '--:--'): string {
+  if (!date) return fallback
+  const d = typeof date === 'string' ? new Date(date) : date
+  if (isNaN(d.getTime())) return fallback
+  return d.toLocaleTimeString('id-ID', {
+    timeZone: 'Asia/Jakarta',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  })
+}
+
+export function formatDateWIB(
+  date: Date | string | null | undefined,
+  options?: Intl.DateTimeFormatOptions,
+  fallback: string = '-'
+): string {
+  if (!date) return fallback
+  const d = typeof date === 'string' ? new Date(date) : date
+  if (isNaN(d.getTime())) return fallback
+  return d.toLocaleDateString('id-ID', {
+    timeZone: 'Asia/Jakarta',
+    ...options
+  })
+}
+
 export function isWeekendDay(dateOrStr: Date | string | null | undefined): boolean {
   if (!dateOrStr) return false
   if (typeof dateOrStr === 'string') {
@@ -21,8 +51,8 @@ export function isWeekendDay(dateOrStr: Date | string | null | undefined): boole
     const day = dateObj.getDay()
     return day === 0 || day === 6
   } else {
-    const day = dateOrStr.getDay()
-    return day === 0 || day === 6
+    const dayStr = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', weekday: 'short' }).format(dateOrStr)
+    return dayStr === 'Sat' || dayStr === 'Sun'
   }
 }
 
@@ -83,9 +113,14 @@ export function calculateEffectiveOvertime(
     // Maksimal lembur weekend adalah 8 jam
     if (actualOvertimeHours > 8) actualOvertimeHours = 8
   } else {
-    // Lembur Weekday: dihitung dari selisih kepulangan setelah pukul 17:00
-    const limit17 = new Date(clockOut)
-    limit17.setHours(17, 0, 0, 0)
+    // Lembur Weekday: dihitung dari selisih kepulangan setelah pukul 17:00 WIB (+07:00)
+    let dateStrWib: string
+    if (typeof dateOrStr === 'string' && dateOrStr.length >= 10) {
+      dateStrWib = dateOrStr.slice(0, 10)
+    } else {
+      dateStrWib = getDateStringWIB(clockOut)
+    }
+    const limit17 = new Date(`${dateStrWib}T17:00:00+07:00`)
 
     const diffMs = clockOut.getTime() - limit17.getTime()
     const diffMinutes = Math.floor(diffMs / 60000)

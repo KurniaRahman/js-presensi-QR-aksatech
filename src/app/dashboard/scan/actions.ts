@@ -3,7 +3,7 @@
 import { auth } from "@/auth"
 import { prisma as db } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { isWeekendDay } from "@/lib/attendance-utils"
+import { isWeekendDay, getDateStringWIB } from "@/lib/attendance-utils"
 import { syncAlphaAttendance } from "@/lib/sync-alpha"
 import { validateUserOfficeLocation } from "@/lib/geo-utils"
 
@@ -36,10 +36,8 @@ export async function processAttendance(qrCode: string, latitude?: number, longi
   const userId = session.user.id
 
   const now = new Date()
-  const y = now.getFullYear()
-  const m = String(now.getMonth() + 1).padStart(2, '0')
-  const d = String(now.getDate()).padStart(2, '0')
-  const todayRecordDate = new Date(`${y}-${m}-${d}T00:00:00.000Z`)
+  const todayStr = getDateStringWIB(now)
+  const todayRecordDate = new Date(`${todayStr}T00:00:00.000Z`)
 
   const existingAttendance = await db.attendance.findFirst({
     where: {

@@ -6,6 +6,11 @@ import { revalidatePath } from "next/cache"
 import { calculateEffectiveOvertime } from "@/lib/attendance-utils"
 import { syncAlphaAttendance } from "@/lib/sync-alpha"
 
+function parseWibTime(recordDate: string, timeStr: string): Date {
+  const normalizedTime = timeStr.length === 5 ? `${timeStr}:00` : timeStr
+  return new Date(`${recordDate}T${normalizedTime}+07:00`)
+}
+
 export async function getUsersForOverride() {
   const session = await auth()
   if (session?.user?.role !== 'ADMIN') throw new Error("Unauthorized")
@@ -28,19 +33,9 @@ export async function addOverrideAttendance(data: {
   if (session?.user?.role !== 'ADMIN') throw new Error("Unauthorized")
 
   const recordDateUtc = new Date(`${data.recordDate}T00:00:00.000Z`)
-  const [y, m, d] = data.recordDate.split('-').map(Number)
 
-  let clockInDT = new Date(y, m - 1, d, 8, 0, 0, 0)
-  if (data.clockIn) {
-    const [h, min] = data.clockIn.split(':').map(Number)
-    clockInDT = new Date(y, m - 1, d, h, min, 0, 0)
-  }
-
-  let clockOutDT: Date | null = null
-  if (data.clockOut) {
-    const [h, min] = data.clockOut.split(':').map(Number)
-    clockOutDT = new Date(y, m - 1, d, h, min, 0, 0)
-  }
+  let clockInDT = parseWibTime(data.recordDate, data.clockIn || '08:00')
+  let clockOutDT: Date | null = data.clockOut ? parseWibTime(data.recordDate, data.clockOut) : null
 
   let duration = null
   if (clockOutDT) {
@@ -254,19 +249,8 @@ export async function saveDailyRecord(data: {
   const recordDateUtc = new Date(`${data.recordDate}T00:00:00.000Z`)
 
   if (data.attendanceStatus !== '') {
-    const [y, m, d] = data.recordDate.split('-').map(Number)
-
-    let clockInDT = new Date(y, m - 1, d, 8, 0, 0, 0)
-    if (data.clockIn) {
-      const [h, min] = data.clockIn.split(':').map(Number)
-      clockInDT = new Date(y, m - 1, d, h, min, 0, 0)
-    }
-
-    let clockOutDT: Date | null = null
-    if (data.clockOut) {
-      const [h, min] = data.clockOut.split(':').map(Number)
-      clockOutDT = new Date(y, m - 1, d, h, min, 0, 0)
-    }
+    let clockInDT = parseWibTime(data.recordDate, data.clockIn || '08:00')
+    let clockOutDT: Date | null = data.clockOut ? parseWibTime(data.recordDate, data.clockOut) : null
 
     let duration = null
     if (clockOutDT) {

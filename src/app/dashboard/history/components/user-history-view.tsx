@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { getUserHistoryData, UserHistoryResponse, UserHistoryItem } from "@/actions/user-history"
+import { formatTimeWIB } from "@/lib/attendance-utils"
 import { 
   Calendar as CalendarIcon, 
   Clock, 
@@ -419,13 +420,13 @@ export function UserHistoryView() {
                     <div>
                       <p className="text-[10px] text-slate-400 font-medium">Masuk</p>
                       <p className="font-bold text-slate-800 mt-0.5">
-                        {item.attendance && item.attendance.status === 'HADIR' ? new Date(item.attendance.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '--:--'}
+                        {item.attendance && item.attendance.status === 'HADIR' ? formatTimeWIB(item.attendance.clock_in) : '--:--'}
                       </p>
                     </div>
                     <div>
                       <p className="text-[10px] text-slate-400 font-medium">Keluar</p>
                       <p className="font-bold text-slate-800 mt-0.5">
-                        {item.attendance?.clock_out && item.attendance.status === 'HADIR' ? new Date(item.attendance.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '--:--'}
+                        {item.attendance?.clock_out && item.attendance.status === 'HADIR' ? formatTimeWIB(item.attendance.clock_out) : '--:--'}
                       </p>
                     </div>
                     <div>
@@ -579,13 +580,13 @@ export function UserHistoryView() {
 
                         <td className="px-5 py-3.5 text-slate-700 font-medium">
                           {item.attendance && item.attendance.status === 'HADIR'
-                            ? new Date(item.attendance.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) 
+                            ? formatTimeWIB(item.attendance.clock_in, '-') 
                             : '-'}
                         </td>
 
                         <td className="px-5 py-3.5 text-slate-700 font-medium">
                           {item.attendance?.clock_out && item.attendance.status === 'HADIR'
-                            ? new Date(item.attendance.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) 
+                            ? formatTimeWIB(item.attendance.clock_out, '-') 
                             : '-'}
                         </td>
 

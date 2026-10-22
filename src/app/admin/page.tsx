@@ -40,9 +40,9 @@ export default async function AdminDashboardPage() {
     currentHour >= 15 && currentHour < 18 ? "Selamat Sore" :
     "Selamat Malam"
 
-  const todayStart = new Date()
-  todayStart.setHours(0, 0, 0, 0)
-  const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000 - 1)
+  const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(now)
+  const todayStart = new Date(`${todayStr}T00:00:00.000Z`)
+  const todayEnd = new Date(`${todayStr}T23:59:59.999Z`)
 
   // Fetch Dashboard Stats
   const [totalUsers, pendingOvertimes, todayAttendances, todayAlphas] = await Promise.all([
@@ -245,7 +245,7 @@ export default async function AdminDashboardPage() {
                 Data Presensi Hari Ini (Real-Time)
               </h2>
               <p className="text-[11px] text-slate-400">
-                {now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                {now.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
             </div>
           </div>

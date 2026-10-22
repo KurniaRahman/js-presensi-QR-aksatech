@@ -22,7 +22,7 @@ import {
   Compass
 } from "lucide-react"
 import { syncAlphaAttendance } from "@/lib/sync-alpha"
-import { calculateEffectiveOvertime } from "@/lib/attendance-utils"
+import { calculateEffectiveOvertime, formatTimeWIB, getDateStringWIB } from "@/lib/attendance-utils"
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -47,9 +47,10 @@ export default async function DashboardPage() {
     currentHour >= 15 && currentHour < 18 ? "Selamat Sore" :
     "Selamat Malam"
 
-  // Rentang hari ini
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000 - 1)
+  // Rentang hari ini berdasarkan zona waktu Indonesia (WIB / Asia/Jakarta)
+  const todayStr = getDateStringWIB(now)
+  const todayStart = new Date(`${todayStr}T00:00:00.000Z`)
+  const todayEnd = new Date(`${todayStr}T23:59:59.999Z`)
 
   // Ambil presensi hari ini
   const todayAttendance = await db.attendance.findFirst({
@@ -62,9 +63,13 @@ export default async function DashboardPage() {
     }
   })
 
-  // Rentang bulan berjalan (1 s/d akhir bulan)
-  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-  const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
+  // Rentang bulan berjalan (1 s/d akhir bulan) dalam WIB
+  const [currentYearStr, currentMonthStr] = todayStr.split('-')
+  const currentYear = parseInt(currentYearStr, 10)
+  const currentMonth = parseInt(currentMonthStr, 10)
+  const firstDayOfMonth = new Date(`${currentYearStr}-${currentMonthStr}-01T00:00:00.000Z`)
+  const lastDateNum = new Date(currentYear, currentMonth, 0).getDate()
+  const lastDayOfMonth = new Date(`${currentYearStr}-${currentMonthStr}-${String(lastDateNum).padStart(2, '0')}T23:59:59.999Z`)
 
   const [monthAttendances, monthOvertimes, recentAttendances] = await Promise.all([
     db.attendance.findMany({
@@ -125,8 +130,8 @@ export default async function DashboardPage() {
     totalLemburWeekend += eff.weekendHours
   })
 
-  // Format nama bulan
-  const monthName = now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+  // Format nama bulan (WIB)
+  const monthName = now.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', month: 'long', year: 'numeric' })
 
   // Status presensi hari ini
   const isAlphaToday = todayAttendance?.status === 'ALPHA'
@@ -224,7 +229,7 @@ export default async function DashboardPage() {
                     Status Presensi Hari Ini
                   </h2>
                   <p className="text-[11px] text-slate-400">
-                    {now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                    {now.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                 </div>
               </div>
@@ -284,7 +289,7 @@ export default async function DashboardPage() {
                   </div>
                   <p className="text-xl sm:text-3xl font-mono font-black text-slate-800">
                     {hasClockIn && todayAttendance?.clock_in
-                      ? todayAttendance.clock_in.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
+                      ? formatTimeWIB(todayAttendance.clock_in)
                       : '--:--'}
                   </p>
                   <p className="text-[11px] font-medium text-slate-500 mt-1">
@@ -310,7 +315,7 @@ export default async function DashboardPage() {
                   </div>
                   <p className="text-xl sm:text-3xl font-mono font-black text-slate-800">
                     {hasClockOut && todayAttendance?.clock_out
-                      ? todayAttendance.clock_out.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
+                      ? formatTimeWIB(todayAttendance.clock_out)
                       : '--:--'}
                   </p>
                   <p className="text-[11px] font-medium text-slate-500 mt-1">
@@ -456,9 +461,9 @@ export default async function DashboardPage() {
                           <p className="text-[11px] text-slate-400 mt-0.5">
                             {isHadir ? (
                               <>
-                                Masuk: {new Date(record.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                                Masuk: {formatTimeWIB(record.clock_in)}
                                 {record.clock_out && (
-                                  <> • Keluar: {new Date(record.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })}</>
+                                  <> • Keluar: {formatTimeWIB(record.clock_out)}</>
                                 )}
                               </>
                             ) : (
