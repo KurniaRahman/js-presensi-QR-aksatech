@@ -29,13 +29,14 @@ export function LoginForm() {
       const res = await loginAction(formData)
       if (res?.error) {
         setError(res.error)
+        setLoading(false)
       }
     } catch (err: any) {
       if (err?.digest?.startsWith("NEXT_REDIRECT")) {
+        // Biarkan loading tetap true karena sedang proses transisi redirect ke dashboard
         throw err
       }
       setError("Gagal terhubung ke server. Periksa koneksi Anda.")
-    } finally {
       setLoading(false)
     }
   }

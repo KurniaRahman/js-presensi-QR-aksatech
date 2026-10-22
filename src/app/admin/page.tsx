@@ -28,9 +28,6 @@ export const metadata = {
 export default async function AdminDashboardPage() {
   const session = await auth()
 
-  // Otomatis tandai ALPHA jika sudah lewat jam kerja (17:00) pada hari kerja
-  await syncAlphaAttendance()
-
   const now = new Date()
 
   // Sapaan dinamis berdasarkan jam Asia/Jakarta
@@ -48,8 +45,8 @@ export default async function AdminDashboardPage() {
   const todayStart = new Date(`${todayStr}T00:00:00.000Z`)
   const todayEnd = new Date(`${todayStr}T23:59:59.999Z`)
 
-  // Fetch Dashboard Stats
-  const [totalUsers, pendingOvertimes, todayAttendances, todayAlphas] = await Promise.all([
+  // Fetch Dashboard Stats, Latest Attendances, dan Sinkronisasi ALPHA secara paralel
+  const [totalUsers, pendingOvertimes, todayAttendances, todayAlphas, recentAttendances] = await Promise.all([
     db.user.count({ where: { is_active: true } }),
     db.overtime.count({ where: { status: 'PENDING' } }),
     db.attendance.count({ 
@@ -63,24 +60,23 @@ export default async function AdminDashboardPage() {
         record_date: { gte: todayStart, lte: todayEnd },
         status: 'ALPHA'
       } 
-    })
-  ])
-
-  // Fetch Latest Attendances
-  const recentAttendances = await db.attendance.findMany({
-    where: {
-      record_date: { gte: todayStart, lte: todayEnd }
-    },
-    include: {
-      user: {
-        select: { full_name: true, role: true }
-      }
-    },
-    orderBy: {
-      clock_in: 'desc'
-    },
-    take: 15
-  })
+    }),
+    db.attendance.findMany({
+      where: {
+        record_date: { gte: todayStart, lte: todayEnd }
+      },
+      include: {
+        user: {
+          select: { full_name: true, role: true }
+        }
+      },
+      orderBy: {
+        clock_in: 'desc'
+      },
+      take: 15
+    }),
+    syncAlphaAttendance()
+  ]).then(([u, ot, att, alp, rec]) => [u, ot, att, alp, rec] as const)
 
   // Hitung berapa yang auto-checkout hari ini (untuk notifikasi admin)
   const autoCheckoutCount = await db.attendance.count({

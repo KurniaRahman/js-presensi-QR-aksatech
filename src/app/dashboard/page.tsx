@@ -35,9 +35,6 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  // Otomatis sinkronkan status ALPHA jika sudah melewati jam kerja (17:00) pada hari kerja
-  await syncAlphaAttendance()
-
   const now = new Date()
 
   // Dapatkan sapaan dinamis berdasarkan jam saat ini (WIB / Asia/Jakarta)
@@ -64,7 +61,7 @@ export default async function DashboardPage() {
   const lastDateNum = new Date(currentYear, currentMonth, 0).getDate()
   const lastDayOfMonth = new Date(`${currentYearStr}-${currentMonthStr}-${String(lastDateNum).padStart(2, '0')}T23:59:59.999Z`)
 
-  // Ambil presensi hari ini dan metrik bulan berjalan secara paralel
+  // Ambil presensi hari ini, metrik bulan berjalan, dan sinkronisasi ALPHA secara paralel
   const [todayAttendance, monthAttendances, monthOvertimes, recentAttendances] = await Promise.all([
     db.attendance.findFirst({
       where: {
@@ -102,8 +99,9 @@ export default async function DashboardPage() {
         record_date: 'desc'
       },
       take: 5
-    })
-  ])
+    }),
+    syncAlphaAttendance()
+  ]).then(([att, mAtt, mOt, rAtt]) => [att, mAtt, mOt, rAtt] as const)
 
   // Hitung metrik bulan berjalan
   const hadirCount = monthAttendances.filter(a => a.status === 'HADIR').length

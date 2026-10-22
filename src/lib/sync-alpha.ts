@@ -5,8 +5,18 @@ import { isWeekendDay } from "@/lib/attendance-utils"
  * Memastikan semua user aktif (semua role: ADMIN, PM, STAFF) yang tidak presensi
  * setelah melewati jam kerja (pukul 17:00) pada hari kerja (weekday) otomatis tercatat sebagai ALPHA.
  */
+let lastAutoSyncTimestamp = 0
+const AUTO_SYNC_COOLDOWN_MS = 10 * 60 * 1000 // 10 menit cooldown antar auto-sync
+
 export async function syncAlphaAttendance(startDateStr?: string, endDateStr?: string) {
   try {
+    const isAutoSync = !startDateStr && !endDateStr
+
+    // Jika auto-sync dipanggil berulang kali dalam kurun waktu 10 menit, lewati agar ringan dan cepat
+    if (isAutoSync && Date.now() - lastAutoSyncTimestamp < AUTO_SYNC_COOLDOWN_MS) {
+      return { createdCount: 0 }
+    }
+
     const now = new Date()
 
     // Format tanggal dan jam saat ini berdasarkan zona waktu Indonesia (WIB / Asia/Jakarta)
@@ -63,6 +73,10 @@ export async function syncAlphaAttendance(startDateStr?: string, endDateStr?: st
       }
 
       curDate.setUTCDate(curDate.getUTCDate() + 1)
+    }
+
+    if (isAutoSync) {
+      lastAutoSyncTimestamp = Date.now()
     }
 
     if (candidateDates.length === 0) {
