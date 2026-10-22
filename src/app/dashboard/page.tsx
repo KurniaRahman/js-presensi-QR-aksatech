@@ -271,10 +271,10 @@ export default async function DashboardPage() {
               </div>
             </div>
 
-            <div className="p-5 sm:p-8 space-y-6">
+            <div className="p-5 sm:p-8 flex flex-col gap-4 sm:gap-6">
               
               {/* Tiles Jam Masuk & Jam Keluar dengan Aksen Berwarna Elegan */}
-              <div className="grid grid-cols-2 gap-3 sm:gap-5">
+              <div className="order-2 sm:order-1 grid grid-cols-2 gap-3 sm:gap-5">
                 {/* Jam Masuk */}
                 <div className={`p-4 sm:p-5 rounded-2xl border transition-all ${
                   hasClockIn 
@@ -330,7 +330,7 @@ export default async function DashboardPage() {
 
               {/* Banner Durasi Jika Sudah Clock In */}
               {todayWorkDurationText && (
-                <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-blue-50/90 via-sky-50/50 to-blue-50/30 border border-blue-200/90 text-xs sm:text-sm shadow-2xs">
+                <div className="order-3 sm:order-2 flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-blue-50/90 via-sky-50/50 to-blue-50/30 border border-blue-200/90 text-xs sm:text-sm shadow-2xs">
                   <span className="text-slate-700 font-semibold flex items-center gap-2">
                     <Clock className="w-4 h-4 text-[#1F77C5]" />
                     Durasi Kerja Hari Ini:
@@ -342,7 +342,7 @@ export default async function DashboardPage() {
               )}
 
               {/* Tombol Aksi Scan Presensi Utama */}
-              <div className="pt-2">
+              <div className="order-1 sm:order-3">
                 {isAlphaToday ? (
                   <div className="p-5 rounded-2xl bg-rose-50 border border-rose-200 text-center space-y-2">
                     <div className="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
