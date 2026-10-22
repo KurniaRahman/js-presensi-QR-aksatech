@@ -1,6 +1,11 @@
 import { LoginForm } from "./login-form"
 import { ShieldCheck, Sparkles, Building2 } from "lucide-react"
 
+export const metadata = {
+  title: "Masuk",
+  description: "Masuk ke Sistem Presensi & HRIS Aksa Tech",
+}
+
 export default async function LoginPage({
   searchParams,
 }: {

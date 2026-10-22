@@ -24,6 +24,10 @@ import {
 import { syncAlphaAttendance } from "@/lib/sync-alpha"
 import { calculateEffectiveOvertime, formatTimeWIB, getDateStringWIB } from "@/lib/attendance-utils"
 
+export const metadata = {
+  title: "Dashboard Karyawan",
+}
+
 export default async function DashboardPage() {
   const session = await auth()
   

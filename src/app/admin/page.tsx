@@ -21,6 +21,10 @@ import {
 
 export const dynamic = 'force-dynamic'
 
+export const metadata = {
+  title: "Dashboard Administrator",
+}
+
 export default async function AdminDashboardPage() {
   const session = await auth()
 
