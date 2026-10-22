@@ -53,6 +53,8 @@ model Attendance {
   clock_out        DateTime?        @db.Timestamp(6)
   duration_minutes Int?
   status           AttendanceStatus @default(HADIR)
+  auto_checkout    Boolean          @default(false)
+  notes            String?          @db.Text
   override_by      String?          @db.Uuid
 
   user     User  @relation("UserAttendances", fields: [user_id], references: [id])

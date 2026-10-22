@@ -78,6 +78,14 @@ export default async function AdminDashboardPage() {
     take: 15
   })
 
+  // Hitung berapa yang auto-checkout hari ini (untuk notifikasi admin)
+  const autoCheckoutCount = await db.attendance.count({
+    where: {
+      record_date: { gte: todayStart, lte: todayEnd },
+      auto_checkout: true
+    }
+  })
+
   return (
     <div className="relative min-h-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-fade-in">
       
@@ -91,6 +99,24 @@ export default async function AdminDashboardPage() {
 
       {/* Subtle Aerospace Tech Dot Grid */}
       <div className="absolute inset-0 bg-[radial-gradient(#1F77C515_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none -z-10 opacity-70"></div>
+
+      {/* Banner Notifikasi: Auto-Checkout (hanya muncul jika ada record auto-checkout hari ini) */}
+      {autoCheckoutCount > 0 && (
+        <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-amber-50 border border-amber-300 shadow-xs">
+          <div className="w-9 h-9 rounded-xl bg-amber-400 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+            <AlertCircle className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-extrabold text-amber-900">
+              ⚠️ {autoCheckoutCount} Karyawan Lupa Presensi Pulang Kemarin
+            </h3>
+            <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+              Sistem otomatis mencatat jam pulang pukul <strong>23:59</strong> untuk karyawan tersebut.
+              Periksa kolom <strong>"Catatan"</strong> pada tabel di bawah, lalu koreksi jam pulang yang sebenarnya jika diperlukan.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* 1. Header Eksekutif Admin & Live Clock */}
       <div className="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(31,119,197,0.08)] border border-blue-100/90 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
