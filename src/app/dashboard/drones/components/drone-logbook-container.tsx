@@ -1,34 +1,34 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { 
-  getDrones, 
-  createDrone, 
-  updateDrone, 
+import {
+  getDrones,
+  createDrone,
+  updateDrone,
   deleteDrone,
-  getDroneMaintenanceLogs, 
-  createMaintenanceLog, 
-  updateMaintenanceLog, 
-  deleteMaintenanceLog 
+  getDroneMaintenanceLogs,
+  createMaintenanceLog,
+  updateMaintenanceLog,
+  deleteMaintenanceLog
 } from "@/actions/drone-maintenance"
 import { formatTimeWIB, formatDateWIB, getDateStringWIB } from "@/lib/attendance-utils"
 import * as XLSX from "xlsx"
-import { 
+import {
   Plane,
-  Wrench, 
-  ShieldCheck, 
-  AlertCircle, 
-  CheckCircle2, 
-  Clock, 
-  Plus, 
-  Search, 
-  Filter, 
-  Calendar as CalendarIcon, 
-  FileSpreadsheet, 
-  Trash2, 
-  Edit2, 
-  Loader2, 
-  Cpu, 
+  Wrench,
+  ShieldCheck,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Plus,
+  Search,
+  Filter,
+  Calendar as CalendarIcon,
+  FileSpreadsheet,
+  Trash2,
+  Edit2,
+  Loader2,
+  Cpu,
   RotateCcw,
   Sparkles,
   ChevronRight,
@@ -248,8 +248,8 @@ export function DroneLogbookContainer({
   const openEditLogModal = (log: MaintenanceLogItem) => {
     setEditLogTarget(log)
     setFormDroneId(log.drone_id)
-    const dateStr = typeof log.maintenance_date === "string" 
-      ? log.maintenance_date.split("T")[0] 
+    const dateStr = typeof log.maintenance_date === "string"
+      ? log.maintenance_date.split("T")[0]
       : getDateStringWIB(log.maintenance_date)
     setFormDate(dateStr)
     setFormType(log.maintenance_type)
@@ -362,7 +362,7 @@ export function DroneLogbookContainer({
       ? drone.model_name
       : "Model AR"
     setFormModel(validModel)
-    
+
     // Ekstrak angka saja dari Serial Number (contoh: "FA-6065" -> "6065")
     const extractedNum = drone.serial_number.replace(/^[A-Za-z]+-?/, "")
     setFormDroneNumber(extractedNum)
@@ -450,10 +450,10 @@ export function DroneLogbookContainer({
           day: "numeric",
         })
 
-        const typeLabel = 
-          item.maintenance_type === "INSPECTION" ? "Inspeksi Berkala" : 
-          item.maintenance_type === "REPAIR" ? "Perbaikan" : 
-          "Penggantian Komponen"
+        const typeLabel =
+          item.maintenance_type === "INSPECTION" ? "Inspeksi Berkala" :
+            item.maintenance_type === "REPAIR" ? "Perbaikan" :
+              "Penggantian Komponen"
 
         return {
           "No": index + 1,
@@ -617,18 +617,16 @@ export function DroneLogbookContainer({
           <button
             type="button"
             onClick={() => setActiveTab("fleet")}
-            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === "fleet"
-                ? "bg-[#1F77C5] text-white shadow-sm"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-            }`}
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === "fleet"
+              ? "bg-[#1F77C5] text-white shadow-sm"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+              }`}
           >
             <Plane className="w-4 h-4" />
             <span>Armada Drone</span>
             <span
-              className={`px-1.5 py-0.5 rounded-full text-[10px] ${
-                activeTab === "fleet" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
-              }`}
+              className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === "fleet" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                }`}
             >
               {drones.length}
             </span>
@@ -637,18 +635,16 @@ export function DroneLogbookContainer({
           <button
             type="button"
             onClick={() => setActiveTab("logs")}
-            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === "logs"
-                ? "bg-[#1F77C5] text-white shadow-sm"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-            }`}
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === "logs"
+              ? "bg-[#1F77C5] text-white shadow-sm"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+              }`}
           >
             <History className="w-4 h-4" />
             <span>Riwayat Perawatan</span>
             <span
-              className={`px-1.5 py-0.5 rounded-full text-[10px] ${
-                activeTab === "logs" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
-              }`}
+              className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === "logs" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                }`}
             >
               {logs.length}
             </span>
@@ -696,11 +692,10 @@ export function DroneLogbookContainer({
                 <button
                   type="button"
                   onClick={() => setFleetModelFilter("ALL")}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                    fleetModelFilter === "ALL"
-                      ? "bg-slate-800 text-white shadow-xs"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200/70"
-                  }`}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${fleetModelFilter === "ALL"
+                    ? "bg-slate-800 text-white shadow-xs"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200/70"
+                    }`}
                 >
                   Semua ({drones.length})
                 </button>
@@ -711,16 +706,14 @@ export function DroneLogbookContainer({
                       key={model}
                       type="button"
                       onClick={() => setFleetModelFilter(model)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                        fleetModelFilter === model
-                          ? "bg-[#1F77C5] text-white shadow-xs"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200/70"
-                      }`}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${fleetModelFilter === model
+                        ? "bg-[#1F77C5] text-white shadow-xs"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200/70"
+                        }`}
                     >
                       <span>{model}</span>
-                      <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                        fleetModelFilter === model ? "bg-blue-600 text-white" : "bg-white text-slate-600"
-                      }`}>
+                      <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${fleetModelFilter === model ? "bg-blue-600 text-white" : "bg-white text-slate-600"
+                        }`}>
                         {count}
                       </span>
                     </button>
@@ -778,8 +771,8 @@ export function DroneLogbookContainer({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
               {filteredDrones.map(drone => {
                 const totalLogs = drone._count.maintenance_logs
-                const latest = drone.maintenance_logs && drone.maintenance_logs.length > 0 
-                  ? drone.maintenance_logs[0] 
+                const latest = drone.maintenance_logs && drone.maintenance_logs.length > 0
+                  ? drone.maintenance_logs[0]
                   : null
 
                 const isReady = drone.status === "READY"
@@ -791,10 +784,9 @@ export function DroneLogbookContainer({
                     className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:border-blue-300 hover:shadow-md transition-all flex flex-col justify-between group relative overflow-hidden"
                   >
                     {/* Top status accent */}
-                    <div 
-                      className={`absolute top-0 left-0 right-0 h-1 ${
-                        isReady ? "bg-emerald-500" : isInMaintenance ? "bg-amber-500" : "bg-slate-300"
-                      }`} 
+                    <div
+                      className={`absolute top-0 left-0 right-0 h-1 ${isReady ? "bg-emerald-500" : isInMaintenance ? "bg-amber-500" : "bg-slate-300"
+                        }`}
                     />
 
                     <div className="space-y-3.5">
@@ -963,11 +955,10 @@ export function DroneLogbookContainer({
                       key={p.id}
                       type="button"
                       onClick={() => applyPreset(p.id as any)}
-                      className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-                        activePreset === p.id
-                          ? "bg-[#1F77C5] text-white border-[#1F77C5] shadow-xs"
-                          : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                      }`}
+                      className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${activePreset === p.id
+                        ? "bg-[#1F77C5] text-white border-[#1F77C5] shadow-xs"
+                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                        }`}
                     >
                       {p.label}
                     </button>
@@ -1043,11 +1034,10 @@ export function DroneLogbookContainer({
                   key={tab.id}
                   type="button"
                   onClick={() => handleLogTypeFilterChange(tab.id)}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                    logTypeFilter === tab.id
-                      ? "bg-slate-800 text-white shadow-xs"
-                      : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/70"
-                  }`}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${logTypeFilter === tab.id
+                    ? "bg-slate-800 text-white shadow-xs"
+                    : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/70"
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -1116,7 +1106,7 @@ export function DroneLogbookContainer({
                         {item.maintenance_type === "REPLACEMENT" && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
                             <RotateCcw className="w-3.5 h-3.5 text-purple-600" />
-                            Penggantian
+                            Pergantian
                           </span>
                         )}
                       </div>
@@ -1283,17 +1273,16 @@ export function DroneLogbookContainer({
                   {[
                     { id: "INSPECTION", label: "Inspeksi", icon: ShieldCheck, color: "text-sky-700 border-sky-300 bg-sky-50" },
                     { id: "REPAIR", label: "Perbaikan", icon: Wrench, color: "text-amber-700 border-amber-300 bg-amber-50" },
-                    { id: "REPLACEMENT", label: "Penggantian", icon: RotateCcw, color: "text-purple-700 border-purple-300 bg-purple-50" },
+                    { id: "REPLACEMENT", label: "Pergantian", icon: RotateCcw, color: "text-purple-700 border-purple-300 bg-purple-50" },
                   ].map(t => (
                     <button
                       key={t.id}
                       type="button"
                       onClick={() => setFormType(t.id)}
-                      className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all ${
-                        formType === t.id
-                          ? `${t.color} shadow-xs ring-2 ring-[#1F77C5]/20`
-                          : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                      }`}
+                      className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all ${formType === t.id
+                        ? `${t.color} shadow-xs ring-2 ring-[#1F77C5]/20`
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                        }`}
                     >
                       <t.icon className="w-4 h-4 mb-1" />
                       <span>{t.label}</span>
@@ -1355,11 +1344,10 @@ export function DroneLogbookContainer({
                   <button
                     type="button"
                     onClick={() => setFormUpdateDroneStatus("READY")}
-                    className={`p-2 rounded-xl text-xs font-bold border transition-all ${
-                      formUpdateDroneStatus === "READY"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-300 ring-2 ring-emerald-500/20"
-                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                    }`}
+                    className={`p-2 rounded-xl text-xs font-bold border transition-all ${formUpdateDroneStatus === "READY"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-300 ring-2 ring-emerald-500/20"
+                      : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                      }`}
                   >
                     ✅ Siap Terbang (Ready)
                   </button>
@@ -1367,11 +1355,10 @@ export function DroneLogbookContainer({
                   <button
                     type="button"
                     onClick={() => setFormUpdateDroneStatus("IN_MAINTENANCE")}
-                    className={`p-2 rounded-xl text-xs font-bold border transition-all ${
-                      formUpdateDroneStatus === "IN_MAINTENANCE"
-                        ? "bg-amber-50 text-amber-700 border-amber-300 ring-2 ring-amber-500/20"
-                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                    }`}
+                    className={`p-2 rounded-xl text-xs font-bold border transition-all ${formUpdateDroneStatus === "IN_MAINTENANCE"
+                      ? "bg-amber-50 text-amber-700 border-amber-300 ring-2 ring-amber-500/20"
+                      : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                      }`}
                   >
                     🛠️ Masih Perlu Servis
                   </button>
@@ -1588,7 +1575,7 @@ export function DroneLogbookContainer({
                             </span>
                             <span className="text-slate-400">•</span>
                             <span className="font-semibold text-slate-600">
-                              {item.maintenance_type === "INSPECTION" ? "🔍 Inspeksi" : item.maintenance_type === "REPAIR" ? "🛠️ Perbaikan" : "🔄 Penggantian"}
+                              {item.maintenance_type === "INSPECTION" ? "🔍 Inspeksi" : item.maintenance_type === "REPAIR" ? "🛠️ Perbaikan" : "🔄 Pergantian"}
                             </span>
                           </div>
                           <span className="text-[11px] text-slate-400">
@@ -1650,7 +1637,7 @@ export function DroneLogbookContainer({
       {/* 6. MODAL POP-UP KONFIRMASI HAPUS LOG SERVIS */}
       {/* ---------------------------------------------------- */}
       {logToDelete && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in"
           onClick={(e) => {
             if (e.target === e.currentTarget && !isDeletingLog) {
@@ -1715,7 +1702,7 @@ export function DroneLogbookContainer({
       {/* 7. MODAL POP-UP KONFIRMASI HAPUS DRONE */}
       {/* ---------------------------------------------------- */}
       {droneToDelete && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in"
           onClick={(e) => {
             if (e.target === e.currentTarget && !isDeletingDrone) {
