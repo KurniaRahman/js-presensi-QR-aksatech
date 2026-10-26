@@ -141,21 +141,21 @@ export function UserFormDialog({
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Peran (Role)</label>
               <Select value={role} onValueChange={(val) => val && setRole(val)}>
-                <SelectTrigger className="rounded-xl border-slate-200 text-sm focus:border-[#1F77C5] bg-white">
+                <SelectTrigger className="w-full rounded-xl border-slate-200 text-sm focus:border-[#1F77C5] bg-white">
                   <SelectValue placeholder="Pilih Role" />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl border-slate-200 shadow-xl">
-                  <SelectItem value="STAFF" className="rounded-lg text-sm font-medium">
-                    Staff (Presensi, Lembur & Log Aktivitas)
+                <SelectContent className="w-[var(--anchor-width)] min-w-[220px] rounded-2xl border-slate-200 shadow-xl bg-white p-1">
+                  <SelectItem value="ADMIN" className="rounded-lg text-sm font-medium cursor-pointer">
+                    Admin
                   </SelectItem>
-                  <SelectItem value="MAGANG" className="rounded-lg text-sm font-medium">
-                    Magang / Internship (Presensi Standar)
+                  <SelectItem value="PM" className="rounded-lg text-sm font-medium cursor-pointer">
+                    Project Manager
                   </SelectItem>
-                  <SelectItem value="PM" className="rounded-lg text-sm font-medium">
-                    Project Manager / PM (Approval Lembur)
+                  <SelectItem value="STAFF" className="rounded-lg text-sm font-medium cursor-pointer">
+                    Staff
                   </SelectItem>
-                  <SelectItem value="ADMIN" className="rounded-lg text-sm font-medium">
-                    Administrator (Akses Penuh Sistem)
+                  <SelectItem value="MAGANG" className="rounded-lg text-sm font-medium cursor-pointer">
+                    Magang
                   </SelectItem>
                 </SelectContent>
               </Select>

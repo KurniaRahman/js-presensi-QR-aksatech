@@ -18,6 +18,16 @@ type User = {
   created_at: Date
 }
 
+const getRoleLabel = (role: string) => {
+  switch (role) {
+    case "ADMIN": return "Admin"
+    case "PM": return "Project Manager"
+    case "MAGANG": return "Magang"
+    case "STAFF": return "Staff"
+    default: return role
+  }
+}
+
 export function UserTable({ users }: { users: User[] }) {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [userToEdit, setUserToEdit] = useState<User | null>(null)
@@ -124,7 +134,7 @@ export function UserTable({ users }: { users: User[] }) {
         return (
           <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${badgeClasses}`}>
             <Shield className="w-3 h-3" />
-            {role === "PM" ? "Project Manager" : role === "MAGANG" ? "Magang" : role}
+            {getRoleLabel(role)}
           </span>
         )
       }
@@ -313,7 +323,7 @@ export function UserTable({ users }: { users: User[] }) {
                         "bg-slate-100 text-slate-700 border-slate-200"
                       }`}>
                         <Shield className="w-3 h-3" />
-                        {user.role === "PM" ? "Project Manager" : user.role === "MAGANG" ? "Magang" : user.role}
+                        {getRoleLabel(user.role)}
                       </span>
                     </div>
 
