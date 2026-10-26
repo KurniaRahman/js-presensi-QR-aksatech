@@ -34,7 +34,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       { name: activityLogLabel, href: "/dashboard/activities", icon: <ClipboardList className="h-5 w-5" /> }
     ] : []),
     ...(canAccessDroneLogbook ? [
-      { name: "Logbook Drone", href: "/dashboard/drones", icon: <Plane className="h-5 w-5" /> }
+      { name: "Log Perawatan", href: "/dashboard/drones", icon: <Plane className="h-5 w-5" /> }
     ] : []),
     { name: "Riwayat", href: "/dashboard/history", icon: <FileText className="h-5 w-5" /> },
   ]

@@ -7,8 +7,8 @@ import { getDateStringWIB } from "@/lib/attendance-utils"
 import { Plane, ArrowLeft, ShieldCheck, Wrench, Sparkles, Cpu } from "lucide-react"
 
 export const metadata = {
-  title: "Logbook Perawatan Drone | HRIS Aksa Tech",
-  description: "Pencatatan riwayat inspeksi, perbaikan, dan penggantian komponen  drone",
+  title: "Log Perawatan | HRIS Aksa Tech",
+  description: "Pencatatan riwayat inspeksi, perbaikan, dan penggantian komponen drone",
 }
 
 export default async function DroneLogbookPage() {
@@ -88,7 +88,7 @@ export default async function DroneLogbookPage() {
                 <span className="p-2 rounded-2xl bg-gradient-to-br from-blue-50 to-sky-50 text-[#1F77C5] border border-blue-100/80 shadow-sm">
                   <Plane className="w-6 h-6" />
                 </span>
-                Logbook Drone
+                Log Perawatan
               </h1>
               <p className="text-sm text-slate-500 max-w-2xl leading-relaxed">
                 Pencatatan riwayat pemeliharaan, inspeksi berkala, penanganan kendala, dan penggantian suku cadang pada setiap unit drone.

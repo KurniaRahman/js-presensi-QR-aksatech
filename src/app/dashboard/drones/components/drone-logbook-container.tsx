@@ -484,8 +484,8 @@ export function DroneLogbookContainer({
       ]
 
       const workbook = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Logbook Perawatan Drone")
-      XLSX.writeFile(workbook, `Logbook_Perawatan_Drone_${startDate}_to_${endDate}.xlsx`)
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Log Perawatan")
+      XLSX.writeFile(workbook, `Log_Perawatan_Drone_${startDate}_to_${endDate}.xlsx`)
     } catch (err) {
       alert("Gagal mengunduh file Excel")
     } finally {
@@ -991,7 +991,7 @@ export function DroneLogbookContainer({
                   className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-sm hover:bg-emerald-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
-                  <span>{isExporting ? "Mengunduh..." : "Ekspor Excel Logbook"}</span>
+                  <span>{isExporting ? "Mengunduh..." : "Ekspor Excel"}</span>
                 </button>
               </div>
             </div>
