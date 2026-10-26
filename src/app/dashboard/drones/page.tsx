@@ -8,7 +8,7 @@ import { Plane, ArrowLeft, ShieldCheck, Wrench, Sparkles, Cpu } from "lucide-rea
 
 export const metadata = {
   title: "Logbook Perawatan Drone | HRIS Aksa Tech",
-  description: "Pencatatan riwayat inspeksi, perbaikan, dan penggantian komponen armada drone PT Aksa Tech Indonesia",
+  description: "Pencatatan riwayat inspeksi, perbaikan, dan penggantian komponen  drone",
 }
 
 export default async function DroneLogbookPage() {
@@ -81,11 +81,7 @@ export default async function DroneLogbookPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-[#1F77C5] border border-blue-200/60">
                   <Plane className="w-3.5 h-3.5" />
-                  {isSupervisor ? "Project Manager • Manajemen & Monitoring Armada" : "Engineer • Perawatan & Servis Armada"}
-                </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                  <Cpu className="w-3 h-3 text-slate-500" />
-                  Avionics & Drone Logbook
+                  {isSupervisor ? "Project Manager • Manajemen & Monitoring Drone" : "Engineer • Perawatan & Servis Drone"}
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2.5">
@@ -95,7 +91,7 @@ export default async function DroneLogbookPage() {
                 Logbook Drone
               </h1>
               <p className="text-sm text-slate-500 max-w-2xl leading-relaxed">
-                Pencatatan riwayat pemeliharaan, inspeksi berkala, penanganan kendala, dan penggantian suku cadang pada setiap unit armada drone PT Aksa Tech Indonesia.
+                Pencatatan riwayat pemeliharaan, inspeksi berkala, penanganan kendala, dan penggantian suku cadang pada setiap unit drone.
               </p>
             </div>
 

@@ -144,11 +144,9 @@ export function DroneLogbookContainer({
   // 2. Modal Tambah / Edit Master Data Drone
   const [isDroneModalOpen, setIsDroneModalOpen] = useState(false)
   const [editDroneTarget, setEditDroneTarget] = useState<DroneItem | null>(null)
-  const [formSN, setFormSN] = useState<string>("")
   const [formModel, setFormModel] = useState<string>("Model AR")
-  const [formCustomModel, setFormCustomModel] = useState<string>("")
+  const [formDroneNumber, setFormDroneNumber] = useState<string>("")
   const [formDroneStatus, setFormDroneStatus] = useState<string>("READY")
-  const [formDroneNotes, setFormDroneNotes] = useState<string>("")
   const [droneFormLoading, setDroneFormLoading] = useState(false)
   const [droneFormError, setDroneFormError] = useState<string | null>(null)
 
@@ -343,47 +341,46 @@ export function DroneLogbookContainer({
   // ----------------------------------------------------
   // DRONE MASTER MODAL HANDLERS
   // ----------------------------------------------------
+  const getDronePrefix = (model: string): string => {
+    if (model === "Model TR") return "FT-"
+    if (model === "Model Revolver") return "FR-"
+    return "FA-"
+  }
+
   const openAddDroneModal = () => {
     setEditDroneTarget(null)
-    setFormSN("")
     setFormModel("Model AR")
-    setFormCustomModel("")
+    setFormDroneNumber("")
     setFormDroneStatus("READY")
-    setFormDroneNotes("")
     setDroneFormError(null)
     setIsDroneModalOpen(true)
   }
 
   const openEditDroneModal = (drone: DroneItem) => {
     setEditDroneTarget(drone)
-    setFormSN(drone.serial_number)
-    const isPreset = ["Model AR", "Model TR", "Model Revolver"].includes(drone.model_name)
-    if (isPreset) {
-      setFormModel(drone.model_name)
-      setFormCustomModel("")
-    } else {
-      setFormModel("OTHER")
-      setFormCustomModel(drone.model_name)
-    }
+    const validModel = ["Model AR", "Model TR", "Model Revolver"].includes(drone.model_name)
+      ? drone.model_name
+      : "Model AR"
+    setFormModel(validModel)
+    
+    // Ekstrak angka saja dari Serial Number (contoh: "FA-6065" -> "6065")
+    const extractedNum = drone.serial_number.replace(/^[A-Za-z]+-?/, "")
+    setFormDroneNumber(extractedNum)
     setFormDroneStatus(drone.status)
-    setFormDroneNotes(drone.notes || "")
     setDroneFormError(null)
     setIsDroneModalOpen(true)
   }
 
   const handleDroneSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const cleanSN = formSN.trim().toUpperCase()
-    if (!cleanSN) {
-      setDroneFormError("Serial Number (SN) wajib diisi")
+    const cleanNumber = formDroneNumber.trim()
+    if (!cleanNumber) {
+      setDroneFormError("Nomor seri drone wajib diisi")
       return
     }
 
-    const resolvedModel = formModel === "OTHER" ? formCustomModel.trim() : formModel
-    if (!resolvedModel) {
-      setDroneFormError("Nama model drone wajib diisi")
-      return
-    }
+    const prefix = getDronePrefix(formModel)
+    const fullSN = `${prefix}${cleanNumber}`
 
     setDroneFormLoading(true)
     setDroneFormError(null)
@@ -391,10 +388,9 @@ export function DroneLogbookContainer({
     try {
       if (editDroneTarget) {
         const res = await updateDrone(editDroneTarget.id, {
-          serial_number: cleanSN,
-          model_name: resolvedModel,
+          serial_number: fullSN,
+          model_name: formModel,
           status: formDroneStatus,
-          notes: formDroneNotes,
         })
         if (res.success && res.data) {
           setDrones(prev => prev.map(d => d.id === editDroneTarget.id ? { ...d, ...res.data } : d))
@@ -402,10 +398,9 @@ export function DroneLogbookContainer({
         }
       } else {
         const res = await createDrone({
-          serial_number: cleanSN,
-          model_name: resolvedModel,
+          serial_number: fullSN,
+          model_name: formModel,
           status: formDroneStatus,
-          notes: formDroneNotes,
         })
         if (res.success && res.data) {
           await refreshDrones()
@@ -1433,21 +1428,6 @@ export function DroneLogbookContainer({
             )}
 
             <form onSubmit={handleDroneSubmit} className="space-y-4">
-              {/* Serial Number */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Serial Number (SN) *
-                </label>
-                <input
-                  type="text"
-                  placeholder="Contoh: FA-6071, FT-6089..."
-                  value={formSN}
-                  onChange={(e) => setFormSN(e.target.value.toUpperCase())}
-                  className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none font-mono uppercase font-bold"
-                  required
-                />
-              </div>
-
               {/* Model Drone */}
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
@@ -1456,23 +1436,39 @@ export function DroneLogbookContainer({
                 <select
                   value={formModel}
                   onChange={(e) => setFormModel(e.target.value)}
-                  className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer font-semibold bg-white"
+                  className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer font-semibold bg-white text-slate-800"
                 >
                   <option value="Model AR">Model AR</option>
                   <option value="Model TR">Model TR</option>
                   <option value="Model Revolver">Model Revolver</option>
-                  <option value="OTHER">Lainnya / Model Baru</option>
                 </select>
+              </div>
 
-                {formModel === "OTHER" && (
+              {/* Serial Number dengan Prefix Otomatis */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+                  <span>Serial Number (SN) *</span>
+                  <span className="text-[11px] font-normal text-slate-400">Hanya masukkan angka</span>
+                </label>
+                <div className="flex items-center rounded-xl border border-slate-200 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-[#1F77C5]/20 focus-within:border-[#1F77C5] transition-all">
+                  <span className="px-3.5 py-2.5 bg-slate-100 border-r border-slate-200 font-mono font-bold text-slate-700 text-xs sm:text-sm select-none shrink-0 flex items-center gap-1.5">
+                    <Plane className="w-3.5 h-3.5 text-[#1F77C5]" />
+                    {getDronePrefix(formModel)}
+                  </span>
                   <input
                     type="text"
-                    placeholder="Ketik nama model drone..."
-                    value={formCustomModel}
-                    onChange={(e) => setFormCustomModel(e.target.value)}
-                    className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none mt-2"
+                    inputMode="numeric"
+                    placeholder="Contoh: 6071"
+                    value={formDroneNumber}
+                    onChange={(e) => setFormDroneNumber(e.target.value.replace(/[^0-9]/g, ""))}
+                    className="w-full text-xs sm:text-sm px-3.5 py-2.5 outline-none font-mono font-bold text-slate-900 bg-transparent placeholder:text-slate-400 placeholder:font-normal"
                     required
                   />
+                </div>
+                {formDroneNumber && (
+                  <p className="text-[11px] text-slate-500 pt-0.5 pl-1">
+                    Serial Number lengkap: <span className="font-mono font-bold text-[#1F77C5]">{getDronePrefix(formModel)}{formDroneNumber}</span>
+                  </p>
                 )}
               </div>
 
@@ -1484,26 +1480,12 @@ export function DroneLogbookContainer({
                 <select
                   value={formDroneStatus}
                   onChange={(e) => setFormDroneStatus(e.target.value)}
-                  className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer font-semibold bg-white"
+                  className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer font-semibold bg-white text-slate-800"
                 >
                   <option value="READY">Siap Terbang (Ready)</option>
                   <option value="IN_MAINTENANCE">Dalam Perbaikan (In Maintenance)</option>
                   <option value="RETIRED">Pensiun / Nonaktif</option>
                 </select>
-              </div>
-
-              {/* Catatan / Keterangan */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Catatan / Spesifikasi (Opsional)
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Keterangan baterai, muatan payload, atau tahun perakitan..."
-                  value={formDroneNotes}
-                  onChange={(e) => setFormDroneNotes(e.target.value)}
-                  className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none"
-                />
               </div>
 
               {/* Action Buttons */}
