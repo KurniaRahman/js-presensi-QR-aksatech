@@ -42,7 +42,7 @@ export const attendanceColumns: ColumnDef<DashboardAttendance>[] = [
         role === "ADMIN"  ? "Admin" :
         role === "PM"     ? "Project Manager" :
         role === "MAGANG" ? "Magang" :
-        "Staff"
+        "Engineer"
 
       return (
         <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${badgeClasses}`}>

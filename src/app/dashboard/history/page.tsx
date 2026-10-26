@@ -19,7 +19,8 @@ export default async function HistoryPage() {
   const roleName = 
     session.user.role === 'ADMIN' ? 'Administrator' : 
     session.user.role === 'PM' ? 'Project Manager' : 
-    'Staff'
+    session.user.role === 'MAGANG' ? 'Magang' : 
+    'Engineer'
 
   return (
     <div className="relative min-h-screen bg-slate-50/60 font-sans">

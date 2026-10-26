@@ -152,7 +152,7 @@ export async function getReportData(startDate: string, endDate: string) {
       user.role === 'ADMIN' ? 'Admin' : 
       user.role === 'PM' ? 'Project Manager' : 
       user.role === 'MAGANG' ? 'Magang' : 
-      'Staff'
+      'Engineer'
 
     return {
       nama: user.full_name,

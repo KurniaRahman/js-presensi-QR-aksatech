@@ -29,11 +29,11 @@ async function main() {
   })
 
   await prisma.user.upsert({
-    where: { email: 'staff@aksatech.com' },
+    where: { email: 'engineer@aksatech.com' },
     update: {},
     create: {
-      email: 'staff@aksatech.com',
-      full_name: 'Staff Karyawan',
+      email: 'engineer@aksatech.com',
+      full_name: 'Engineer Aksa Tech',
       password_hash,
       role: Role.STAFF,
     },

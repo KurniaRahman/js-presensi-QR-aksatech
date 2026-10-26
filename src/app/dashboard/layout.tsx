@@ -1,7 +1,7 @@
 import { Sidebar } from "@/components/layout/sidebar"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import { Home, ScanLine, Clock, FileText } from "lucide-react"
+import { Home, ScanLine, Clock, FileText, ClipboardList } from "lucide-react"
 import { SessionTimeoutWatcher } from "@/components/auth/session-timeout-watcher"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -11,12 +11,24 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect('/login')
   }
 
+  const canAccessActivityLogs = 
+    session.user.role === "STAFF" || 
+    session.user.role === "PM"
+
+  const activityLogLabel = 
+    session.user.role === "PM" 
+      ? "Log Aktivitas Tim" 
+      : "Log Aktivitas"
+
   const userNavItems = [
     { name: "Dashboard", href: "/dashboard", icon: <Home className="h-5 w-5" /> },
     { name: "Scan Presensi", href: "/dashboard/scan", icon: <ScanLine className="h-5 w-5" /> },
     session.user.role === "PM"
       ? { name: "Approval Lembur", href: "/dashboard/approvals", icon: <Clock className="h-5 w-5" /> }
       : { name: "Pengajuan Lembur", href: "/dashboard/overtimes", icon: <Clock className="h-5 w-5" /> },
+    ...(canAccessActivityLogs ? [
+      { name: activityLogLabel, href: "/dashboard/activities", icon: <ClipboardList className="h-5 w-5" /> }
+    ] : []),
     { name: "Riwayat", href: "/dashboard/history", icon: <FileText className="h-5 w-5" /> },
   ]
 
@@ -29,7 +41,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           session.user.role === 'PM' ? 'Project Manager' : 
           session.user.role === 'MAGANG' ? 'Magang' : 
           session.user.role === 'ADMIN' ? 'Administrator' : 
-          'Staff'
+          'Engineer'
         } 
       />
 

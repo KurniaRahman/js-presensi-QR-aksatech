@@ -23,7 +23,7 @@ const getRoleLabel = (role: string) => {
     case "ADMIN": return "Admin"
     case "PM": return "Project Manager"
     case "MAGANG": return "Magang"
-    case "STAFF": return "Staff"
+    case "STAFF": return "Engineer"
     default: return role
   }
 }
@@ -202,7 +202,7 @@ export function UserTable({ users }: { users: User[] }) {
           <option value="ALL">Semua Role</option>
           <option value="ADMIN">Admin</option>
           <option value="PM">Project Manager (PM)</option>
-          <option value="STAFF">Staff</option>
+          <option value="STAFF">Engineer</option>
           <option value="MAGANG">Magang</option>
         </select>
       </div>

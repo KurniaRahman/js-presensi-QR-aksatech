@@ -152,7 +152,7 @@ export function UserFormDialog({
                     Project Manager
                   </SelectItem>
                   <SelectItem value="STAFF" className="rounded-lg text-sm font-medium cursor-pointer">
-                    Staff
+                    Engineer
                   </SelectItem>
                   <SelectItem value="MAGANG" className="rounded-lg text-sm font-medium cursor-pointer">
                     Magang

@@ -38,10 +38,11 @@ model User {
   created_at    DateTime @default(now())
 
   // Relations
-  attendances           Attendance[] @relation("UserAttendances")
-  overriddenAttendances Attendance[] @relation("AdminOverrideAttendances")
-  overtimes             Overtime[]   @relation("UserOvertimes")
-  approvedOvertimes     Overtime[]   @relation("PMApprovedOvertimes")
+  attendances           Attendance[]  @relation("UserAttendances")
+  overriddenAttendances Attendance[]  @relation("AdminOverrideAttendances")
+  overtimes             Overtime[]    @relation("UserOvertimes")
+  approvedOvertimes     Overtime[]    @relation("PMApprovedOvertimes")
+  activityLogs          ActivityLog[] @relation("UserActivityLogs")
 
   @@map("users")
 }
@@ -86,4 +87,19 @@ model SystemSetting {
   value String
 
   @@map("system_settings")
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  user_id     String   @db.Uuid
+  log_date    DateTime @db.Date
+  title       String
+  description String   @db.Text
+  status      String   @default("DONE") // DONE, IN_PROGRESS, PENDING
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user User @relation("UserActivityLogs", fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
 }

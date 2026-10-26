@@ -157,7 +157,11 @@ export default async function DashboardPage() {
     }
   }
 
-  const userRoleName = session.user.role === 'PM' ? 'Project Manager' : session.user.role === 'ADMIN' ? 'Administrator' : 'Staff'
+  const userRoleName = 
+    session.user.role === 'PM' ? 'Project Manager' : 
+    session.user.role === 'ADMIN' ? 'Administrator' : 
+    session.user.role === 'MAGANG' ? 'Magang' : 
+    'Engineer'
 
   return (
     <div className="relative min-h-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-fade-in">
