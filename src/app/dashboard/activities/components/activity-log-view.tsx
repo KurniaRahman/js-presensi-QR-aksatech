@@ -78,6 +78,11 @@ export function ActivityLogView({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Modal State Hapus Tugas (Pop-up Konfirmasi)
+  const [itemToDelete, setItemToDelete] = useState<ActivityItem | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
   // ----------------------------------------------------
   // PRESET & DATE RANGE HANDLERS
   // ----------------------------------------------------
@@ -188,15 +193,28 @@ export function ActivityLogView({
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus catatan aktivitas ini?")) return
+  const openDeleteModal = (item: ActivityItem) => {
+    setItemToDelete(item)
+    setDeleteError(null)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return
+    setIsDeleting(true)
+    setDeleteError(null)
+
     try {
-      const res = await deleteActivityLog(id)
+      const res = await deleteActivityLog(itemToDelete.id)
       if (res.success) {
-        setLogs(prev => prev.filter(l => l.id !== id))
+        setLogs(prev => prev.filter(l => l.id !== itemToDelete.id))
+        setItemToDelete(null)
+      } else {
+        setDeleteError("Gagal menghapus catatan aktivitas")
       }
     } catch (err: any) {
-      alert(err.message || "Gagal menghapus catatan aktivitas")
+      setDeleteError(err.message || "Gagal menghapus catatan aktivitas")
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -605,7 +623,7 @@ export function ActivityLogView({
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDelete(item.id)}
+                            onClick={() => openDeleteModal(item)}
                             className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
                             title="Hapus Tugas"
                           >
@@ -737,6 +755,73 @@ export function ActivityLogView({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Modal Konfirmasi Hapus Tugas (Modern Responsive Pop-up) */}
+      {itemToDelete && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isDeleting) {
+              setItemToDelete(null)
+            }
+          }}
+        >
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-slate-200 space-y-4 animate-scale-up relative overflow-hidden">
+            {/* Accent Red Strip */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500" />
+
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center shrink-0 shadow-xs">
+                <Trash2 className="w-6 h-6" />
+              </div>
+
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <h3 className="text-base sm:text-lg font-bold text-slate-800">
+                  Hapus Catatan Aktivitas?
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                  Apakah Anda yakin ingin menghapus catatan tugas{" "}
+                  <span className="font-semibold text-slate-800 break-words">
+                    "{itemToDelete.title}"
+                  </span>
+                  ?
+                </p>
+              </div>
+            </div>
+
+            <div className="text-[11px] text-rose-600 font-medium flex items-center gap-2 bg-rose-50/80 px-3 py-2 rounded-xl border border-rose-100">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+              <span>Tindakan ini bersifat permanen dan data tugas tidak dapat dipulihkan.</span>
+            </div>
+
+            {deleteError && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setItemToDelete(null)}
+                className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-50"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+                className="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
+              >
+                {isDeleting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>{isDeleting ? "Menghapus..." : "Ya, Hapus"}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
