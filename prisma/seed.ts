@@ -56,7 +56,40 @@ async function main() {
     create: { key: 'OFFICE_RADIUS_METERS', value: '100' },
   })
 
-  console.log('Seeding completed: Default Users & Office Geofence Coordinates initialized.')
+  // Inisialisasi Armada Drone Awal
+  const initialDrones = [
+    // Model AR
+    { serial_number: 'FA-6065', model_name: 'Model AR' },
+    { serial_number: 'FA-6066', model_name: 'Model AR' },
+    { serial_number: 'FA-6067', model_name: 'Model AR' },
+    { serial_number: 'FA-6068', model_name: 'Model AR' },
+    { serial_number: 'FA-6069', model_name: 'Model AR' },
+    { serial_number: 'FA-6070', model_name: 'Model AR' },
+    // Model TR
+    { serial_number: 'FT-6085', model_name: 'Model TR' },
+    { serial_number: 'FT-6086', model_name: 'Model TR' },
+    { serial_number: 'FT-6087', model_name: 'Model TR' },
+    { serial_number: 'FT-6088', model_name: 'Model TR' },
+    // Model Revolver
+    { serial_number: 'FR-6113', model_name: 'Model Revolver' },
+    { serial_number: 'FR-6114', model_name: 'Model Revolver' },
+    { serial_number: 'FR-6115', model_name: 'Model Revolver' },
+    { serial_number: 'FR-6116', model_name: 'Model Revolver' },
+  ]
+
+  for (const drone of initialDrones) {
+    await prisma.drone.upsert({
+      where: { serial_number: drone.serial_number },
+      update: { model_name: drone.model_name },
+      create: {
+        serial_number: drone.serial_number,
+        model_name: drone.model_name,
+        status: 'READY',
+      },
+    })
+  }
+
+  console.log('Seeding completed: Default Users, Office Geofence, and 14 Initial Drones initialized.')
 }
 
 main()

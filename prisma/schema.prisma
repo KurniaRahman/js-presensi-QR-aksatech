@@ -38,11 +38,12 @@ model User {
   created_at    DateTime @default(now())
 
   // Relations
-  attendances           Attendance[]  @relation("UserAttendances")
-  overriddenAttendances Attendance[]  @relation("AdminOverrideAttendances")
-  overtimes             Overtime[]    @relation("UserOvertimes")
-  approvedOvertimes     Overtime[]    @relation("PMApprovedOvertimes")
-  activityLogs          ActivityLog[] @relation("UserActivityLogs")
+  attendances           Attendance[]          @relation("UserAttendances")
+  overriddenAttendances Attendance[]          @relation("AdminOverrideAttendances")
+  overtimes             Overtime[]            @relation("UserOvertimes")
+  approvedOvertimes     Overtime[]            @relation("PMApprovedOvertimes")
+  activityLogs          ActivityLog[]         @relation("UserActivityLogs")
+  droneMaintenanceLogs  DroneMaintenanceLog[] @relation("UserDroneMaintenanceLogs")
 
   @@map("users")
 }
@@ -102,4 +103,36 @@ model ActivityLog {
   user User @relation("UserActivityLogs", fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("activity_logs")
+}
+
+model Drone {
+  id            String   @id @default(uuid()) @db.Uuid
+  serial_number String   @unique
+  model_name    String
+  status        String   @default("READY") // READY, IN_MAINTENANCE, RETIRED
+  notes         String?  @db.Text
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  maintenance_logs DroneMaintenanceLog[]
+
+  @@map("drones")
+}
+
+model DroneMaintenanceLog {
+  id               String   @id @default(uuid()) @db.Uuid
+  drone_id         String   @db.Uuid
+  user_id          String   @db.Uuid
+  maintenance_date DateTime @db.Date
+  maintenance_type String   // INSPECTION, REPAIR, REPLACEMENT
+  issue_indication String   @db.Text
+  action_taken     String   @db.Text
+  additional_notes String?  @db.Text
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  drone Drone @relation(fields: [drone_id], references: [id], onDelete: Cascade)
+  user  User  @relation("UserDroneMaintenanceLogs", fields: [user_id], references: [id])
+
+  @@map("drone_maintenance_logs")
 }
