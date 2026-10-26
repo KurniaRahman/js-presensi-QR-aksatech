@@ -118,12 +118,13 @@ export function UserTable({ users }: { users: User[] }) {
         const badgeClasses = 
           role === "ADMIN" ? "bg-purple-50 text-purple-700 border-purple-200" :
           role === "PM" ? "bg-blue-50 text-blue-700 border-blue-200" :
+          role === "MAGANG" ? "bg-amber-50 text-amber-700 border-amber-200" :
           "bg-slate-100 text-slate-700 border-slate-200"
         
         return (
           <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${badgeClasses}`}>
             <Shield className="w-3 h-3" />
-            {role === "PM" ? "Project Manager" : role}
+            {role === "PM" ? "Project Manager" : role === "MAGANG" ? "Magang" : role}
           </span>
         )
       }
@@ -192,6 +193,7 @@ export function UserTable({ users }: { users: User[] }) {
           <option value="ADMIN">Admin</option>
           <option value="PM">Project Manager (PM)</option>
           <option value="STAFF">Staff</option>
+          <option value="MAGANG">Magang</option>
         </select>
       </div>
 
@@ -307,10 +309,11 @@ export function UserTable({ users }: { users: User[] }) {
                       <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
                         user.role === "ADMIN" ? "bg-purple-50 text-purple-700 border-purple-200" :
                         user.role === "PM" ? "bg-blue-50 text-blue-700 border-blue-200" :
+                        user.role === "MAGANG" ? "bg-amber-50 text-amber-700 border-amber-200" :
                         "bg-slate-100 text-slate-700 border-slate-200"
                       }`}>
                         <Shield className="w-3 h-3" />
-                        {user.role === "PM" ? "Project Manager" : user.role}
+                        {user.role === "PM" ? "Project Manager" : user.role === "MAGANG" ? "Magang" : user.role}
                       </span>
                     </div>
 

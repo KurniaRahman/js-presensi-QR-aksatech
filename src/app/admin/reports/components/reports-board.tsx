@@ -383,6 +383,8 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
                             record.user_role === 'ADMIN' 
                               ? 'bg-purple-50 text-purple-700 border-purple-200' 
+                              : record.user_role === 'MAGANG'
+                              ? 'bg-amber-50 text-amber-700 border-amber-200'
                               : 'bg-blue-50 text-blue-700 border-blue-200'
                           }`}>
                             {record.user_role}
@@ -573,6 +575,8 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                             <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
                               record.user_role === 'ADMIN' 
                                 ? 'bg-purple-50 text-purple-700 border-purple-200' 
+                                : record.user_role === 'MAGANG'
+                                ? 'bg-amber-50 text-amber-700 border-amber-200'
                                 : 'bg-blue-50 text-blue-700 border-blue-200'
                             }`}>
                               {record.user_role}

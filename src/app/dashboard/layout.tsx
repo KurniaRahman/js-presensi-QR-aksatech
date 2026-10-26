@@ -25,7 +25,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <Sidebar 
         navItems={userNavItems} 
         userName={session.user.name || session.user.email || "Karyawan"} 
-        userRole={session.user.role === 'PM' ? 'Project Manager' : session.user.role || 'Staff'} 
+        userRole={
+          session.user.role === 'PM' ? 'Project Manager' : 
+          session.user.role === 'MAGANG' ? 'Magang' : 
+          session.user.role === 'ADMIN' ? 'Administrator' : 
+          'Staff'
+        } 
       />
 
       <main className="flex-1 overflow-y-auto w-full relative">

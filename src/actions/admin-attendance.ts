@@ -148,7 +148,11 @@ export async function getReportData(startDate: string, endDate: string) {
       lemburWeekend += effective.weekendHours
     })
 
-    const roleName = user.role === 'ADMIN' ? 'Admin' : user.role === 'PM' ? 'Project Manager' : 'Staff'
+    const roleName = 
+      user.role === 'ADMIN' ? 'Admin' : 
+      user.role === 'PM' ? 'Project Manager' : 
+      user.role === 'MAGANG' ? 'Magang' : 
+      'Staff'
 
     return {
       nama: user.full_name,

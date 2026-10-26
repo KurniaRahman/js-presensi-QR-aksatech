@@ -10,6 +10,7 @@ datasource db {
 
 enum Role {
   STAFF
+  MAGANG
   PM
   ADMIN
 }

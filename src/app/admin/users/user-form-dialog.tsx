@@ -146,7 +146,10 @@ export function UserFormDialog({
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl border-slate-200 shadow-xl">
                   <SelectItem value="STAFF" className="rounded-lg text-sm font-medium">
-                    Staff (Presensi & Lembur Standar)
+                    Staff (Presensi, Lembur & Log Aktivitas)
+                  </SelectItem>
+                  <SelectItem value="MAGANG" className="rounded-lg text-sm font-medium">
+                    Magang / Internship (Presensi Standar)
                   </SelectItem>
                   <SelectItem value="PM" className="rounded-lg text-sm font-medium">
                     Project Manager / PM (Approval Lembur)

@@ -33,13 +33,14 @@ export const attendanceColumns: ColumnDef<DashboardAttendance>[] = [
     cell: ({ row }) => {
       const role = row.original.user.role
       const badgeClasses =
-        role === "ADMIN" ? "bg-purple-50 text-purple-700 border-purple-200" :
-        role === "PM"    ? "bg-blue-50 text-blue-700 border-blue-200" :
+        role === "ADMIN"  ? "bg-purple-50 text-purple-700 border-purple-200" :
+        role === "PM"     ? "bg-blue-50 text-blue-700 border-blue-200" :
+        role === "MAGANG" ? "bg-amber-50 text-amber-700 border-amber-200" :
         "bg-slate-100 text-slate-700 border-slate-200"
 
       return (
         <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${badgeClasses}`}>
-          {role}
+          {role === "MAGANG" ? "MAGANG" : role}
         </span>
       )
     },
