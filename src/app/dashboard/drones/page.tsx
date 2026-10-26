@@ -4,7 +4,7 @@ import Link from "next/link"
 import { DroneLogbookContainer } from "./components/drone-logbook-container"
 import { getDrones, getDroneMaintenanceLogs } from "@/actions/drone-maintenance"
 import { getDateStringWIB } from "@/lib/attendance-utils"
-import { Plane, ArrowLeft, ShieldCheck, Wrench, Sparkles, Cpu } from "lucide-react"
+import { ArrowLeft, ShieldCheck, Wrench, Sparkles, Cpu } from "lucide-react"
 
 export const metadata = {
   title: "Log Perawatan | HRIS Aksa Tech",
@@ -80,13 +80,13 @@ export default async function DroneLogbookPage() {
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-[#1F77C5] border border-blue-200/60">
-                  <Plane className="w-3.5 h-3.5" />
+                  <Wrench className="w-3.5 h-3.5" />
                   {isSupervisor ? "Project Manager • Manajemen & Monitoring Drone" : "Engineer • Perawatan & Servis Drone"}
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2.5">
                 <span className="p-2 rounded-2xl bg-gradient-to-br from-blue-50 to-sky-50 text-[#1F77C5] border border-blue-100/80 shadow-sm">
-                  <Plane className="w-6 h-6" />
+                  <Wrench className="w-6 h-6" />
                 </span>
                 Log Perawatan
               </h1>

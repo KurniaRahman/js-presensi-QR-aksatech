@@ -14,7 +14,7 @@ import {
 import { formatTimeWIB, formatDateWIB, getDateStringWIB } from "@/lib/attendance-utils"
 import * as XLSX from "xlsx"
 import { 
-  Plane, 
+  Plane,
   Wrench, 
   ShieldCheck, 
   AlertCircle, 
@@ -1409,7 +1409,7 @@ export function DroneLogbookContainer({
           <div className="bg-white rounded-3xl p-5 sm:p-7 max-w-md w-full shadow-2xl border border-slate-200 space-y-4 animate-scale-up">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
-                <Plane className="w-4 h-4 text-[#1F77C5]" />
+                <Cpu className="w-4 h-4 text-[#1F77C5]" />
                 {editDroneTarget ? "Edit Unit Drone" : "Tambah Unit Drone Baru"}
               </h3>
               <button
@@ -1452,7 +1452,7 @@ export function DroneLogbookContainer({
                 </label>
                 <div className="flex items-center rounded-xl border border-slate-200 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-[#1F77C5]/20 focus-within:border-[#1F77C5] transition-all">
                   <span className="px-3.5 py-2.5 bg-slate-100 border-r border-slate-200 font-mono font-bold text-slate-700 text-xs sm:text-sm select-none shrink-0 flex items-center gap-1.5">
-                    <Plane className="w-3.5 h-3.5 text-[#1F77C5]" />
+                    <Cpu className="w-3.5 h-3.5 text-[#1F77C5]" />
                     {getDronePrefix(formModel)}
                   </span>
                   <input

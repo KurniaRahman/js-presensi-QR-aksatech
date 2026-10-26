@@ -1,7 +1,7 @@
 import { Sidebar } from "@/components/layout/sidebar"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import { Home, ScanLine, Clock, FileText, ClipboardList, Plane } from "lucide-react"
+import { Home, ScanLine, Clock, FileText, ClipboardList, Wrench } from "lucide-react"
 import { SessionTimeoutWatcher } from "@/components/auth/session-timeout-watcher"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -34,7 +34,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       { name: activityLogLabel, href: "/dashboard/activities", icon: <ClipboardList className="h-5 w-5" /> }
     ] : []),
     ...(canAccessDroneLogbook ? [
-      { name: "Log Perawatan", href: "/dashboard/drones", icon: <Plane className="h-5 w-5" /> }
+      { name: "Log Perawatan", href: "/dashboard/drones", icon: <Wrench className="h-5 w-5" /> }
     ] : []),
     { name: "Riwayat", href: "/dashboard/history", icon: <FileText className="h-5 w-5" /> },
   ]
