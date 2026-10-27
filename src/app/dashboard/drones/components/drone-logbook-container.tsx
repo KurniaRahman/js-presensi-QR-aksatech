@@ -146,7 +146,6 @@ export function DroneLogbookContainer({
   const [editDroneTarget, setEditDroneTarget] = useState<DroneItem | null>(null)
   const [formModel, setFormModel] = useState<string>("Model AR")
   const [formDroneNumber, setFormDroneNumber] = useState<string>("")
-  const [formDroneStatus, setFormDroneStatus] = useState<string>("READY")
   const [droneFormLoading, setDroneFormLoading] = useState(false)
   const [droneFormError, setDroneFormError] = useState<string | null>(null)
 
@@ -351,12 +350,15 @@ export function DroneLogbookContainer({
     setEditDroneTarget(null)
     setFormModel("Model AR")
     setFormDroneNumber("")
-    setFormDroneStatus("READY")
     setDroneFormError(null)
     setIsDroneModalOpen(true)
   }
 
   const openEditDroneModal = (drone: DroneItem) => {
+    if (drone._count.maintenance_logs > 0) {
+      alert("Unit drone yang sudah memiliki riwayat perawatan tidak dapat diubah nomor seri atau modelnya.")
+      return
+    }
     setEditDroneTarget(drone)
     const validModel = ["Model AR", "Model TR", "Model Revolver"].includes(drone.model_name)
       ? drone.model_name
@@ -366,7 +368,6 @@ export function DroneLogbookContainer({
     // Ekstrak angka saja dari Serial Number (contoh: "FA-6065" -> "6065")
     const extractedNum = drone.serial_number.replace(/^[A-Za-z]+-?/, "")
     setFormDroneNumber(extractedNum)
-    setFormDroneStatus(drone.status)
     setDroneFormError(null)
     setIsDroneModalOpen(true)
   }
@@ -382,6 +383,16 @@ export function DroneLogbookContainer({
     const prefix = getDronePrefix(formModel)
     const fullSN = `${prefix}${cleanNumber}`
 
+    // Validasi duplikasi nomor seri di sisi client untuk feedback instan
+    const isDuplicate = drones.some(d => 
+      d.serial_number.toUpperCase() === fullSN.toUpperCase() &&
+      (!editDroneTarget || d.id !== editDroneTarget.id)
+    )
+    if (isDuplicate) {
+      setDroneFormError(`Nomor seri "${fullSN}" sudah terdaftar di armada. Harap gunakan nomor seri yang unik.`)
+      return
+    }
+
     setDroneFormLoading(true)
     setDroneFormError(null)
 
@@ -390,7 +401,6 @@ export function DroneLogbookContainer({
         const res = await updateDrone(editDroneTarget.id, {
           serial_number: fullSN,
           model_name: formModel,
-          status: formDroneStatus,
         })
         if (res.success && res.data) {
           setDrones(prev => prev.map(d => d.id === editDroneTarget.id ? { ...d, ...res.data } : d))
@@ -400,7 +410,6 @@ export function DroneLogbookContainer({
         const res = await createDrone({
           serial_number: fullSN,
           model_name: formModel,
-          status: formDroneStatus,
         })
         if (res.success && res.data) {
           await refreshDrones()
@@ -408,7 +417,7 @@ export function DroneLogbookContainer({
         }
       }
     } catch (err: any) {
-      setDroneFormError(err.message || "Gagal menyimpan data drone")
+      setDroneFormError(err.message || "Gagal menyimpan data unit drone")
     } finally {
       setDroneFormLoading(false)
     }
@@ -653,15 +662,18 @@ export function DroneLogbookContainer({
 
         {/* Global Action Buttons */}
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
-          {/* Tambah Drone (Bisa oleh Engineer dan PM) */}
-          <button
-            type="button"
-            onClick={openAddDroneModal}
-            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white text-slate-700 border border-slate-200 text-xs font-bold shadow-xs hover:bg-slate-50 hover:text-[#1F77C5] transition-all active:scale-[0.98] flex-1 sm:flex-initial"
-          >
-            <Plus className="w-4 h-4 text-[#1F77C5]" />
-            <span>Tambah Drone</span>
-          </button>
+          {/* Tambah Drone (Khusus PM) */}
+          {isPM && (
+            <button
+              type="button"
+              onClick={openAddDroneModal}
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white text-slate-700 border border-slate-200 text-xs font-bold shadow-xs hover:bg-slate-50 hover:text-[#1F77C5] transition-all active:scale-[0.98] flex-1 sm:flex-initial"
+              title="Tambah Unit Drone Baru (PM)"
+            >
+              <Plus className="w-4 h-4 text-[#1F77C5]" />
+              <span>Tambah Drone</span>
+            </button>
+          )}
 
           {/* Catat Perawatan */}
           <button
@@ -758,14 +770,16 @@ export function DroneLogbookContainer({
               <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto">
                 Silakan sesuaikan filter pencarian atau tambahkan unit drone baru ke dalam armada.
               </p>
-              <button
-                type="button"
-                onClick={openAddDroneModal}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1F77C5] text-white text-xs font-bold shadow-xs hover:bg-blue-600 transition-all mt-2"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Tambah Unit Drone</span>
-              </button>
+              {isPM && (
+                <button
+                  type="button"
+                  onClick={openAddDroneModal}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1F77C5] text-white text-xs font-bold shadow-xs hover:bg-blue-600 transition-all mt-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Tambah Unit Drone</span>
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
@@ -859,26 +873,28 @@ export function DroneLogbookContainer({
 
                     {/* Card Actions Footer */}
                     <div className="flex items-center justify-between gap-2 pt-4 mt-3 border-t border-slate-100">
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => openEditDroneModal(drone)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-[#1F77C5] hover:bg-blue-50 transition-all"
-                          title="Edit Master Drone"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        {isPM && (
+                      {isPM && totalLogs === 0 ? (
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => openEditDroneModal(drone)}
+                            className="p-1.5 rounded-lg bg-blue-50 border border-blue-200 text-[#1F77C5] hover:bg-blue-100 hover:border-blue-300 transition-all shadow-xs"
+                            title="Koreksi Typo Data Drone (PM)"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => setDroneToDelete(drone)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
+                            className="p-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 hover:border-rose-300 transition-all shadow-xs"
                             title="Hapus Drone (PM)"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <div />
+                      )}
 
                       <div className="flex items-center gap-1.5">
                         <button
@@ -1126,22 +1142,22 @@ export function DroneLogbookContainer({
                         </div>
 
                         {canEditOrDelete && (
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => openEditLogModal(item)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-[#1F77C5] hover:bg-blue-50 transition-all"
+                              className="p-1.5 rounded-lg bg-blue-50 border border-blue-200 text-[#1F77C5] hover:bg-blue-100 hover:border-blue-300 transition-all shadow-xs"
                               title="Edit Catatan"
                             >
-                              <Edit2 className="w-4 h-4" />
+                              <Edit2 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               type="button"
                               onClick={() => setLogToDelete(item)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
+                              className="p-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 hover:border-rose-300 transition-all shadow-xs"
                               title="Hapus Catatan"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         )}
@@ -1397,7 +1413,7 @@ export function DroneLogbookContainer({
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
                 <Cpu className="w-4 h-4 text-[#1F77C5]" />
-                {editDroneTarget ? "Edit Unit Drone" : "Tambah Unit Drone Baru"}
+                {editDroneTarget ? "Koreksi Data Unit Drone (PM)" : "Tambah Unit Drone Baru (PM)"}
               </h3>
               <button
                 type="button"
@@ -1459,20 +1475,22 @@ export function DroneLogbookContainer({
                 )}
               </div>
 
-              {/* Status Kelayakan */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Status Kelayakan
-                </label>
-                <select
-                  value={formDroneStatus}
-                  onChange={(e) => setFormDroneStatus(e.target.value)}
-                  className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer font-semibold bg-white text-slate-800"
-                >
-                  <option value="READY">Siap Terbang (Ready)</option>
-                  <option value="IN_MAINTENANCE">Dalam Perbaikan (In Maintenance)</option>
-                  <option value="RETIRED">Pensiun / Nonaktif</option>
-                </select>
+              {/* Info Status Kelayakan (Read-only / SOP Keamanan) */}
+              <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 text-xs text-amber-900 space-y-1">
+                <p className="font-bold flex items-center gap-1.5">
+                  <span>ℹ️ Ketentuan Status Drone</span>
+                </p>
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  {editDroneTarget ? (
+                    <>
+                      Status kelayakan unit ini saat ini adalah <strong>{editDroneTarget.status === "READY" ? "Siap Terbang (Ready)" : editDroneTarget.status === "IN_MAINTENANCE" ? "Dalam Perbaikan" : "Pensiun / Nonaktif"}</strong>. Sesuai SOP keamanan armada, perubahan status hanya dapat dilakukan secara otomatis melalui menu <strong>Catat Perawatan</strong> agar memiliki rekam jejak teknisi dan riwayat servis yang jelas.
+                    </>
+                  ) : (
+                    <>
+                      Unit drone baru otomatis didaftarkan dengan status <strong>Siap Terbang (Ready)</strong>. Perubahan status selanjutnya hanya dapat dilakukan melalui menu <strong>Catat Perawatan</strong>.
+                    </>
+                  )}
+                </p>
               </div>
 
               {/* Action Buttons */}
