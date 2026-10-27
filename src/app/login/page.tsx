@@ -41,14 +41,12 @@ export default async function LoginPage({
         <div className="mx-auto w-full max-w-sm mt-2 sm:mt-4 md:mt-0 bg-white/90 md:bg-transparent backdrop-blur-xs md:backdrop-blur-none p-6 sm:p-8 md:p-0 rounded-3xl md:rounded-none border border-slate-200/80 md:border-none shadow-xl shadow-blue-500/5 md:shadow-none animate-in fade-in duration-300">
           
           {/* Mobile Illustration Banner Card */}
-          <div className="md:hidden mb-6 relative rounded-2xl overflow-hidden border border-blue-100/90 shadow-md shadow-blue-500/10 aspect-[16/9] bg-gradient-to-br from-[#0B2545] to-[#1F77C5]">
+          <div className="md:hidden mb-6 relative rounded-2xl overflow-hidden border border-slate-200/90 shadow-md shadow-blue-500/5 aspect-[16/9] bg-slate-100">
             <img
               src="/background_login.png"
               alt="Aksa Tech Operations"
-              className="w-full h-full object-cover object-center opacity-95"
+              className="w-full h-full object-cover object-center"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent flex items-end p-3">
-            </div>
           </div>
 
           {/* Heading Teks Login Rebranded */}

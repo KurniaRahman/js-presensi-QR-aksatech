@@ -159,7 +159,13 @@ export function UserFormDialog({
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Peran (Role)</label>
               <Select value={role} onValueChange={(val) => val && setRole(val)}>
                 <SelectTrigger className="w-full rounded-xl border-slate-200 text-sm focus:border-[#1F77C5] bg-white">
-                  <SelectValue placeholder="Pilih Role" />
+                  <SelectValue placeholder="Pilih Role">
+                    {role === "ADMIN" ? "Admin" :
+                     role === "PM" ? "Project Manager" :
+                     role === "STAFF" ? "Engineer" :
+                     role === "MAGANG" ? "Magang" :
+                     role === "GUEST" ? "Guest" : role}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="w-[var(--anchor-width)] min-w-[220px] rounded-2xl border-slate-200 shadow-xl bg-white p-1">
                   <SelectItem value="ADMIN" className="rounded-lg text-sm font-medium cursor-pointer">
@@ -175,7 +181,7 @@ export function UserFormDialog({
                     Magang
                   </SelectItem>
                   <SelectItem value="GUEST" className="rounded-lg text-sm font-medium cursor-pointer text-indigo-700">
-                    Guest (External Client / Auditor)
+                    Guest
                   </SelectItem>
                 </SelectContent>
               </Select>

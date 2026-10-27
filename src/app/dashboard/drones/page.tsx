@@ -92,11 +92,6 @@ export default async function DroneLogbookPage() {
                       ? "External Guest • Viewer Log Perawatan Drone" 
                       : "Engineer • Perawatan & Servis Drone"}
                 </span>
-                {isGuest && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                    Akses Read-Only
-                  </span>
-                )}
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2.5">
                 <span className="p-2 rounded-2xl bg-gradient-to-br from-blue-50 to-sky-50 text-[#1F77C5] border border-blue-100/80 shadow-sm">
