@@ -109,8 +109,8 @@ export default async function DroneLogbookPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2.5 self-start md:self-center">
-              {!isGuest ? (
+            {!isGuest && (
+              <div className="flex items-center gap-2.5 self-start md:self-center">
                 <Link
                   href="/dashboard"
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-slate-700 text-sm font-semibold border border-slate-200 shadow-sm hover:bg-slate-50 hover:text-[#1F77C5] hover:border-blue-200 transition-all active:scale-[0.98]"
@@ -118,16 +118,8 @@ export default async function DroneLogbookPage() {
                   <ArrowLeft className="w-4 h-4 text-slate-400" />
                   <span>Dashboard</span>
                 </Link>
-              ) : (
-                <Link
-                  href="/dashboard/flights"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-slate-700 text-sm font-semibold border border-slate-200 shadow-sm hover:bg-slate-50 hover:text-[#1F77C5] hover:border-blue-200 transition-all active:scale-[0.98]"
-                >
-                  <span>Log Penerbangan</span>
-                  <Wrench className="w-4 h-4 text-slate-400 rotate-45" />
-                </Link>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 

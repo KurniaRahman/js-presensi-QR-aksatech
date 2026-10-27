@@ -41,6 +41,26 @@ export function LoginForm() {
     }
   }
 
+  const handleEmailInvalid = (e: React.FormEvent<HTMLInputElement>) => {
+    const target = e.currentTarget
+    if (target.validity.valueMissing) {
+      target.setCustomValidity("Silakan masukkan alamat email akun Anda.")
+    } else if (target.validity.typeMismatch) {
+      target.setCustomValidity("Format email tidak valid. Harap sertakan tanda '@' (contoh: nama@aksatech.com)")
+    } else {
+      target.setCustomValidity("Format alamat email belum sesuai.")
+    }
+  }
+
+  const handlePasswordInvalid = (e: React.FormEvent<HTMLInputElement>) => {
+    const target = e.currentTarget
+    if (target.validity.valueMissing) {
+      target.setCustomValidity("Silakan masukkan kata sandi akun Anda.")
+    } else {
+      target.setCustomValidity("Kata sandi belum sesuai.")
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="space-y-4">
@@ -53,9 +73,11 @@ export function LoginForm() {
             id="email" 
             name="email" 
             type="email" 
-            placeholder="Phone or Email address" 
+            placeholder="Masukkan alamat email akun" 
             required 
             autoComplete="email"
+            onInvalid={handleEmailInvalid}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
             className="rounded-full pl-12 pr-6 py-6 border-slate-300 bg-white/80 focus:bg-white focus:border-[#1F77C5] focus:ring-2 focus:ring-[#1F77C5]/20 text-slate-800 placeholder:text-slate-400 text-sm sm:text-base shadow-xs transition-all"
           />
         </div>
@@ -69,9 +91,11 @@ export function LoginForm() {
             id="password" 
             name="password" 
             type={showPassword ? "text" : "password"} 
-            placeholder="Password" 
+            placeholder="Masukkan kata sandi akun" 
             required 
             autoComplete="current-password"
+            onInvalid={handlePasswordInvalid}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
             className="rounded-full pl-12 pr-12 py-6 border-slate-300 bg-white/80 focus:bg-white focus:border-[#1F77C5] focus:ring-2 focus:ring-[#1F77C5]/20 text-slate-800 placeholder:text-slate-400 text-sm sm:text-base shadow-xs transition-all"
           />
           <button

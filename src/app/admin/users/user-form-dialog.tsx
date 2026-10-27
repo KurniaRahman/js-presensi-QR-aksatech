@@ -118,6 +118,12 @@ export function UserFormDialog({
                 defaultValue={userToEdit?.full_name} 
                 required 
                 placeholder="Contoh: Budi Santoso"
+                onInvalid={(e) => {
+                  if (e.currentTarget.validity.valueMissing) {
+                    e.currentTarget.setCustomValidity("Silakan masukkan nama lengkap pengguna.")
+                  }
+                }}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
                 className="rounded-xl border-slate-200 focus:border-[#1F77C5] text-sm"
               />
             </div>
@@ -130,7 +136,18 @@ export function UserFormDialog({
                 defaultValue={userToEdit?.email} 
                 disabled={!!userToEdit} 
                 required 
-                placeholder="nama@aksatech.com"
+                placeholder="Masukkan alamat email akun"
+                onInvalid={(e) => {
+                  const target = e.currentTarget
+                  if (target.validity.valueMissing) {
+                    target.setCustomValidity("Silakan masukkan alamat email akun.")
+                  } else if (target.validity.typeMismatch) {
+                    target.setCustomValidity("Format email tidak valid. Harap sertakan tanda '@' (contoh: nama@aksatech.com)")
+                  } else {
+                    target.setCustomValidity("Format alamat email belum sesuai.")
+                  }
+                }}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
                 className={`rounded-xl border-slate-200 text-sm ${userToEdit ? 'bg-slate-50 text-slate-500 font-mono' : 'focus:border-[#1F77C5]'}`}
               />
               {userToEdit && (
@@ -173,6 +190,12 @@ export function UserFormDialog({
                 type="password" 
                 required={!userToEdit} 
                 placeholder={userToEdit ? "Kosongkan jika tidak ingin mengubah" : "Minimal 6 karakter"}
+                onInvalid={(e) => {
+                  if (e.currentTarget.validity.valueMissing) {
+                    e.currentTarget.setCustomValidity("Silakan masukkan password akun.")
+                  }
+                }}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
                 className="rounded-xl border-slate-200 focus:border-[#1F77C5] text-sm"
               />
             </div>
@@ -186,6 +209,12 @@ export function UserFormDialog({
                 type="password" 
                 required={!userToEdit} 
                 placeholder="Ulangi password di atas"
+                onInvalid={(e) => {
+                  if (e.currentTarget.validity.valueMissing) {
+                    e.currentTarget.setCustomValidity("Silakan masukkan konfirmasi password.")
+                  }
+                }}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
                 className="rounded-xl border-slate-200 focus:border-[#1F77C5] text-sm"
               />
             </div>
