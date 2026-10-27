@@ -13,6 +13,7 @@ enum Role {
   MAGANG
   PM
   ADMIN
+  GUEST
 }
 
 enum AttendanceStatus {

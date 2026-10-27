@@ -36,12 +36,18 @@ export function Sidebar({
         .toUpperCase()
     : 'AK'
 
+  const homeHref = userRole === 'Administrator' 
+    ? "/admin" 
+    : userRole === 'Guest (External)' 
+      ? "/dashboard/drones" 
+      : "/dashboard"
+
   return (
     <>
       {/* Mobile Top Bar */}
       {!hideMobile && (
         <div className="md:hidden flex items-center justify-between bg-white border-b border-slate-200/80 px-4 py-3 shadow-xs">
-          <Link href={userRole === 'Administrator' ? "/admin" : "/dashboard"} className="flex items-center gap-2">
+          <Link href={homeHref} className="flex items-center gap-2">
             <img 
               src="/logo.png" 
               alt="Aksa Tech" 
@@ -75,7 +81,7 @@ export function Sidebar({
         {/* Logo Area (Dominan Putih & Menyatu Alami) */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between">
           <Link 
-            href={userRole === 'Administrator' ? "/admin" : "/dashboard"} 
+            href={homeHref} 
             onClick={() => setIsOpen(false)}
             className="transition-transform hover:scale-[1.02] flex items-center justify-center flex-1"
           >

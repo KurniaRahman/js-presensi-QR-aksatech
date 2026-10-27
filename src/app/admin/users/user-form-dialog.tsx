@@ -105,8 +105,8 @@ export function UserFormDialog({
             </div>
             <p className="text-xs text-slate-500">
               {userToEdit 
-                ? "Ubah informasi profil, peran, atau reset kata sandi akun karyawan." 
-                : "Daftarkan akun karyawan baru ke dalam sistem HRIS Aksa Tech."}
+                ? "Ubah informasi profil, peran, atau reset kata sandi akun pengguna." 
+                : "Daftarkan akun pengguna baru ke dalam portal terpadu Aksa Tech."}
             </p>
           </DialogHeader>
           
@@ -118,19 +118,36 @@ export function UserFormDialog({
                 defaultValue={userToEdit?.full_name} 
                 required 
                 placeholder="Contoh: Budi Santoso"
+                onInvalid={(e) => {
+                  if (e.currentTarget.validity.valueMissing) {
+                    e.currentTarget.setCustomValidity("Silakan masukkan nama lengkap pengguna.")
+                  }
+                }}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
                 className="rounded-xl border-slate-200 focus:border-[#1F77C5] text-sm"
               />
             </div>
             
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Email Perusahaan</label>
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Email Perusahaan / Akun</label>
               <Input 
                 name="email" 
                 type="email" 
                 defaultValue={userToEdit?.email} 
                 disabled={!!userToEdit} 
                 required 
-                placeholder="nama@aksatech.com"
+                placeholder="Masukkan alamat email akun"
+                onInvalid={(e) => {
+                  const target = e.currentTarget
+                  if (target.validity.valueMissing) {
+                    target.setCustomValidity("Silakan masukkan alamat email akun.")
+                  } else if (target.validity.typeMismatch) {
+                    target.setCustomValidity("Format email tidak valid. Harap sertakan tanda '@' (contoh: nama@aksatech.com)")
+                  } else {
+                    target.setCustomValidity("Format alamat email belum sesuai.")
+                  }
+                }}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
                 className={`rounded-xl border-slate-200 text-sm ${userToEdit ? 'bg-slate-50 text-slate-500 font-mono' : 'focus:border-[#1F77C5]'}`}
               />
               {userToEdit && (
@@ -142,7 +159,13 @@ export function UserFormDialog({
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Peran (Role)</label>
               <Select value={role} onValueChange={(val) => val && setRole(val)}>
                 <SelectTrigger className="w-full rounded-xl border-slate-200 text-sm focus:border-[#1F77C5] bg-white">
-                  <SelectValue placeholder="Pilih Role" />
+                  <SelectValue placeholder="Pilih Role">
+                    {role === "ADMIN" ? "Admin" :
+                     role === "PM" ? "Project Manager" :
+                     role === "STAFF" ? "Engineer" :
+                     role === "MAGANG" ? "Magang" :
+                     role === "GUEST" ? "Guest" : role}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="w-[var(--anchor-width)] min-w-[220px] rounded-2xl border-slate-200 shadow-xl bg-white p-1">
                   <SelectItem value="ADMIN" className="rounded-lg text-sm font-medium cursor-pointer">
@@ -157,6 +180,9 @@ export function UserFormDialog({
                   <SelectItem value="MAGANG" className="rounded-lg text-sm font-medium cursor-pointer">
                     Magang
                   </SelectItem>
+                  <SelectItem value="GUEST" className="rounded-lg text-sm font-medium cursor-pointer text-indigo-700">
+                    Guest
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -170,6 +196,12 @@ export function UserFormDialog({
                 type="password" 
                 required={!userToEdit} 
                 placeholder={userToEdit ? "Kosongkan jika tidak ingin mengubah" : "Minimal 6 karakter"}
+                onInvalid={(e) => {
+                  if (e.currentTarget.validity.valueMissing) {
+                    e.currentTarget.setCustomValidity("Silakan masukkan password akun.")
+                  }
+                }}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
                 className="rounded-xl border-slate-200 focus:border-[#1F77C5] text-sm"
               />
             </div>
@@ -183,6 +215,12 @@ export function UserFormDialog({
                 type="password" 
                 required={!userToEdit} 
                 placeholder="Ulangi password di atas"
+                onInvalid={(e) => {
+                  if (e.currentTarget.validity.valueMissing) {
+                    e.currentTarget.setCustomValidity("Silakan masukkan konfirmasi password.")
+                  }
+                }}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
                 className="rounded-xl border-slate-200 focus:border-[#1F77C5] text-sm"
               />
             </div>

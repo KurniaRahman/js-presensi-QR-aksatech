@@ -7,7 +7,7 @@ import { getDateStringWIB } from "@/lib/attendance-utils"
 import { ArrowLeft, ShieldCheck, Wrench, Sparkles, Cpu } from "lucide-react"
 
 export const metadata = {
-  title: "Log Perawatan | HRIS Aksa Tech",
+  title: "Log Perawatan | Aksa Tech Integrated Portal",
   description: "Pencatatan riwayat inspeksi, perbaikan, dan penggantian komponen drone",
 }
 
@@ -18,16 +18,21 @@ export default async function DroneLogbookPage() {
     redirect("/login")
   }
 
-  // Khusus role STAFF (Engineer) dan PM. Admin dan Magang diarahkan kembali ke dashboard.
-  if (session.user.role !== "STAFF" && session.user.role !== "PM") {
+  // Khusus role STAFF (Engineer), PM, dan GUEST (Eksternal Aksa Tech).
+  if (
+    session.user.role !== "STAFF" && 
+    session.user.role !== "PM" && 
+    session.user.role !== "GUEST"
+  ) {
     if (session.user.role === "ADMIN") {
       redirect("/admin")
     }
     redirect("/dashboard")
   }
 
-  const userRole = session.user.role as "STAFF" | "PM"
+  const userRole = session.user.role as "STAFF" | "PM" | "GUEST"
   const isSupervisor = userRole === "PM"
+  const isGuest = userRole === "GUEST"
 
   const now = new Date()
   const todayStr = getDateStringWIB(now)
@@ -81,7 +86,11 @@ export default async function DroneLogbookPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-[#1F77C5] border border-blue-200/60">
                   <Wrench className="w-3.5 h-3.5" />
-                  {isSupervisor ? "Project Manager • Manajemen & Monitoring Drone" : "Engineer • Perawatan & Servis Drone"}
+                  {isSupervisor 
+                    ? "Project Manager • Manajemen & Monitoring Drone" 
+                    : isGuest 
+                      ? "External Guest • Viewer Log Perawatan Drone" 
+                      : "Engineer • Perawatan & Servis Drone"}
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2.5">
@@ -95,15 +104,17 @@ export default async function DroneLogbookPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2.5 self-start md:self-center">
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-slate-700 text-sm font-semibold border border-slate-200 shadow-sm hover:bg-slate-50 hover:text-[#1F77C5] hover:border-blue-200 transition-all active:scale-[0.98]"
-              >
-                <ArrowLeft className="w-4 h-4 text-slate-400" />
-                <span>Dashboard</span>
-              </Link>
-            </div>
+            {!isGuest && (
+              <div className="flex items-center gap-2.5 self-start md:self-center">
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-slate-700 text-sm font-semibold border border-slate-200 shadow-sm hover:bg-slate-50 hover:text-[#1F77C5] hover:border-blue-200 transition-all active:scale-[0.98]"
+                >
+                  <ArrowLeft className="w-4 h-4 text-slate-400" />
+                  <span>Dashboard</span>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 

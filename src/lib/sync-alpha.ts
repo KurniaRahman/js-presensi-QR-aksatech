@@ -83,9 +83,12 @@ export async function syncAlphaAttendance(startDateStr?: string, endDateStr?: st
       return { createdCount: 0 }
     }
 
-    // Ambil seluruh akun aktif dari SEMUA ROLE (ADMIN, PM, STAFF)
+    // Ambil seluruh akun aktif internal (ADMIN, PM, STAFF) - kecualikan role GUEST (eksternal)
     const activeUsers = await db.user.findMany({
-      where: { is_active: true },
+      where: {
+        is_active: true,
+        role: { not: 'GUEST' }
+      },
       select: { id: true, created_at: true }
     })
 
