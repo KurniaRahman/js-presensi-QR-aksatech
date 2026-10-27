@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { getUserHistoryData, UserHistoryResponse, UserHistoryItem } from "@/actions/user-history"
-import { formatTimeWIB } from "@/lib/attendance-utils"
+import { formatTimeWIB, getDateStringWIB } from "@/lib/attendance-utils"
 import { 
   Calendar as CalendarIcon, 
   Clock, 
@@ -425,9 +425,22 @@ export function UserHistoryView() {
                     </div>
                     <div>
                       <p className="text-[10px] text-slate-400 font-medium">Keluar</p>
-                      <p className="font-bold text-slate-800 mt-0.5">
-                        {item.attendance?.clock_out && item.attendance.status === 'HADIR' ? formatTimeWIB(item.attendance.clock_out) : '--:--'}
-                      </p>
+                      <div className="font-bold text-slate-800 mt-0.5 flex items-center justify-center gap-1">
+                        {(() => {
+                          if (!item.attendance || item.attendance.status !== 'HADIR') return '--:--'
+                          const todayStr = getDateStringWIB(new Date())
+                          const isPastDay = item.dateStr < todayStr
+                          if (item.attendance.auto_checkout || (!item.attendance.clock_out && isPastDay)) {
+                            return (
+                              <span className="text-[11px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+                                ⚠️ Lupa Checkout
+                              </span>
+                            )
+                          }
+                          if (!item.attendance.clock_out) return <span className="text-slate-400 font-normal">--:--</span>
+                          return formatTimeWIB(item.attendance.clock_out)
+                        })()}
+                      </div>
                     </div>
                     <div>
                       <p className="text-[10px] text-slate-400 font-medium">Durasi</p>
@@ -585,9 +598,29 @@ export function UserHistoryView() {
                         </td>
 
                         <td className="px-5 py-3.5 text-slate-700 font-medium">
-                          {item.attendance?.clock_out && item.attendance.status === 'HADIR'
-                            ? formatTimeWIB(item.attendance.clock_out, '-') 
-                            : '-'}
+                          {(() => {
+                            if (!item.attendance || item.attendance.status !== 'HADIR') return '-'
+                            const todayStr = getDateStringWIB(new Date())
+                            const isPastDay = item.dateStr < todayStr
+                            const isAutoOrForgot = item.attendance.auto_checkout || (!item.attendance.clock_out && isPastDay)
+
+                            if (isAutoOrForgot) {
+                              return (
+                                <span
+                                  title="Anda tidak melakukan presensi pulang pada tanggal ini."
+                                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 cursor-help whitespace-nowrap"
+                                >
+                                  ⚠️ Lupa Checkout
+                                </span>
+                              )
+                            }
+
+                            if (!item.attendance.clock_out) {
+                              return <span className="text-slate-400 text-xs italic">Belum Keluar</span>
+                            }
+
+                            return formatTimeWIB(item.attendance.clock_out, '-')
+                          })()}
                         </td>
 
                         <td className="px-5 py-3.5 font-medium text-slate-800">
