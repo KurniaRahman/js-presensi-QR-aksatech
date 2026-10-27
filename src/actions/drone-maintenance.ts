@@ -60,14 +60,14 @@ export async function getDrones() {
 export async function createDrone(data: {
   serial_number: string
   model_name: string
-  status?: string
   notes?: string
 }) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
 
-  if (session.user.role !== "STAFF" && session.user.role !== "PM") {
-    throw new Error("Akses ditolak")
+  // Hanya PM yang berwenang menambah unit drone baru
+  if (session.user.role !== "PM") {
+    throw new Error("Hanya Project Manager yang berwenang menambahkan unit drone baru")
   }
 
   const cleanSN = data.serial_number?.trim().toUpperCase()
@@ -80,6 +80,7 @@ export async function createDrone(data: {
     throw new Error("Model drone wajib diisi")
   }
 
+  // Cek duplikasi Serial Number
   const existing = await db.drone.findUnique({
     where: { serial_number: cleanSN },
   })
@@ -87,15 +88,12 @@ export async function createDrone(data: {
     throw new Error(`Drone dengan Serial Number "${cleanSN}" sudah terdaftar`)
   }
 
-  const safeStatus = ALLOWED_DRONE_STATUSES.includes(data.status as any)
-    ? data.status!
-    : "READY"
-
+  // Unit drone baru otomatis berstatus READY (Siap Terbang)
   const newDrone = await db.drone.create({
     data: {
       serial_number: cleanSN,
       model_name: cleanModel,
-      status: safeStatus,
+      status: "READY",
       notes: data.notes?.trim() || null,
     },
   })
@@ -105,22 +103,23 @@ export async function createDrone(data: {
 }
 
 /**
- * Memperbarui data unit drone
+ * Memperbarui data unit drone (Koreksi Typo Model & Serial Number oleh PM)
+ * Catatan: Perubahan status drone tidak diizinkan di sini, status hanya dapat diubah melalui Catat Perawatan.
  */
 export async function updateDrone(
   id: string,
   data: {
     serial_number: string
     model_name: string
-    status: string
     notes?: string
   }
 ) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
 
-  if (session.user.role !== "STAFF" && session.user.role !== "PM") {
-    throw new Error("Akses ditolak")
+  // Hanya PM yang berwenang mengoreksi data unit drone
+  if (session.user.role !== "PM") {
+    throw new Error("Hanya Project Manager yang berwenang mengedit data unit drone")
   }
 
   const cleanSN = data.serial_number?.trim().toUpperCase()
@@ -128,7 +127,15 @@ export async function updateDrone(
   const cleanModel = data.model_name?.trim()
   if (!cleanModel) throw new Error("Model drone wajib diisi")
 
-  // Pastikan SN tidak bentrok dengan ID drone lain
+  // Pastikan unit drone belum memiliki riwayat perawatan sebelum diizinkan koreksi
+  const logCount = await db.droneMaintenanceLog.count({
+    where: { drone_id: id },
+  })
+  if (logCount > 0) {
+    throw new Error("Unit drone tidak dapat diubah identitasnya karena sudah memiliki riwayat perawatan")
+  }
+
+  // Pastikan SN unik dan tidak bentrok dengan ID drone lain
   const conflict = await db.drone.findFirst({
     where: {
       serial_number: cleanSN,
@@ -139,16 +146,12 @@ export async function updateDrone(
     throw new Error(`Serial Number "${cleanSN}" sudah digunakan oleh unit lain`)
   }
 
-  const safeStatus = ALLOWED_DRONE_STATUSES.includes(data.status as any)
-    ? data.status
-    : "READY"
-
+  // Status drone tidak diubah di sini (status hanya diubah melalui pencatatan servis)
   const updated = await db.drone.update({
     where: { id },
     data: {
       serial_number: cleanSN,
       model_name: cleanModel,
-      status: safeStatus,
       notes: data.notes?.trim() || null,
     },
   })
@@ -158,7 +161,7 @@ export async function updateDrone(
 }
 
 /**
- * Menghapus unit drone
+ * Menghapus unit drone (Hanya jika belum memiliki riwayat perawatan)
  */
 export async function deleteDrone(id: string) {
   const session = await auth()
@@ -167,6 +170,14 @@ export async function deleteDrone(id: string) {
   // Hanya PM yang dapat menghapus armada drone
   if (session.user.role !== "PM") {
     throw new Error("Hanya Project Manager yang dapat menghapus unit drone")
+  }
+
+  // Blokir penghapusan jika unit sudah memiliki riwayat perawatan
+  const logCount = await db.droneMaintenanceLog.count({
+    where: { drone_id: id },
+  })
+  if (logCount > 0) {
+    throw new Error("Unit drone tidak dapat dihapus karena sudah memiliki riwayat perawatan. Jika unit sudah tidak beroperasi, silakan alihkan statusnya menjadi 'Pensiun' melalui menu Catat Perawatan")
   }
 
   await db.drone.delete({
