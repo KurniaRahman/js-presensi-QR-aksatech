@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { getDailyRecords, getReportData, saveDailyRecord, deleteAttendanceRecord } from "@/actions/admin-attendance"
-import { calculateEffectiveOvertime, isWeekendDay, formatTimeWIB } from "@/lib/attendance-utils"
+import { calculateEffectiveOvertime, isWeekendDay, formatTimeWIB, getDateStringWIB } from "@/lib/attendance-utils"
 import { Search, Download, Plus, Calendar as CalendarIcon, X, Edit2, Trash2, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, Filter, RotateCcw } from "lucide-react"
 import * as XLSX from "xlsx"
 
@@ -14,7 +14,14 @@ type DailyRecord = {
   user_role?: string;
   dateStr: string;
   date: Date;
-  attendance: { id?: string, status: string, clock_in: Date, clock_out: Date | null } | null;
+  attendance: { 
+    id?: string
+    status: string
+    clock_in: Date
+    clock_out: Date | null
+    auto_checkout?: boolean
+    notes?: string | null 
+  } | null;
   overtime: { id: string, duration_hours: number, status: string } | null;
 }
 
@@ -39,6 +46,7 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
   const [sortCol, setSortCol] = useState<SortCol>("date")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
   const [isLoading, setIsLoading] = useState(false)
+  const todayStr = useMemo(() => getDateStringWIB(new Date()), [])
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -196,7 +204,7 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
     if (record.attendance) {
       const cInDate = new Date(record.attendance.clock_in)
       cIn = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', hour12: false }).format(cInDate)
-      if (record.attendance.clock_out) {
+      if (record.attendance.clock_out && !record.attendance.auto_checkout) {
         const cOutDate = new Date(record.attendance.clock_out)
         cOut = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', hour12: false }).format(cOutDate)
       } else {
@@ -602,7 +610,31 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
                         {record.attendance && record.attendance.status === 'HADIR' ? formatTimeWIB(record.attendance.clock_in, '-') : '-'}
                       </td>
                       <td className="px-4 py-3.5 font-medium text-slate-700">
-                        {record.attendance?.clock_out && record.attendance.status === 'HADIR' ? formatTimeWIB(record.attendance.clock_out, '-') : '-'}
+                        {(() => {
+                          if (!record.attendance || record.attendance.status !== 'HADIR') {
+                            return '-'
+                          }
+
+                          const isPastDay = record.dateStr < todayStr
+                          const isAutoOrForgot = record.attendance.auto_checkout || (!record.attendance.clock_out && isPastDay)
+
+                          if (isAutoOrForgot) {
+                            return (
+                              <span
+                                title="Karyawan tidak melakukan presensi pulang pada tanggal ini. Klik ikon pensil untuk mengisi jam pulang manual jika diperlukan."
+                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 cursor-help whitespace-nowrap"
+                              >
+                                ⚠️ Lupa Checkout
+                              </span>
+                            )
+                          }
+
+                          if (!record.attendance.clock_out) {
+                            return <span className="text-slate-400 text-xs italic">Belum Keluar</span>
+                          }
+
+                          return formatTimeWIB(record.attendance.clock_out, '-')
+                        })()}
                       </td>
                       {/* Lembur Weekday */}
                       <td className="px-4 py-3.5 text-center">

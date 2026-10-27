@@ -75,25 +75,25 @@ export const attendanceColumns: ColumnDef<DashboardAttendance>[] = [
         return <span className="text-slate-400 italic text-xs">-</span>
       }
 
+      if (auto_checkout) {
+        return (
+          <span
+            title="Karyawan tidak melakukan presensi pulang. Silakan admin verifikasi dan koreksi jika diperlukan."
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 cursor-help whitespace-nowrap"
+          >
+            ⚠️ Lupa Checkout
+          </span>
+        )
+      }
+
       if (!clock_out) {
         return <span className="text-slate-400 italic text-xs">Belum Keluar</span>
       }
 
       return (
-        <div className="flex items-center gap-1.5">
-          <span className="font-mono text-xs font-medium text-slate-700">
-            {formatTimeWIB(clock_out)}
-          </span>
-          {/* Badge khusus jika auto-checkout oleh sistem */}
-          {auto_checkout && (
-            <span
-              title="Waktu pulang otomatis dicatat sistem karena karyawan lupa presensi pulang"
-              className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 cursor-help"
-            >
-              ⚠️ Auto
-            </span>
-          )}
-        </div>
+        <span className="font-mono text-xs font-medium text-slate-700">
+          {formatTimeWIB(clock_out)}
+        </span>
       )
     },
   },

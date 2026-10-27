@@ -58,7 +58,8 @@ export async function addOverrideAttendance(data: {
         clock_in: clockInDT,
         clock_out: clockOutDT,
         duration_minutes: duration,
-        override_by: session.user.id
+        override_by: session.user.id,
+        auto_checkout: false,
       }
     })
   } else {
@@ -276,7 +277,8 @@ export async function saveDailyRecord(data: {
           clock_in: clockInDT,
           clock_out: clockOutDT,
           duration_minutes: duration,
-          override_by: session.user.id
+          override_by: session.user.id,
+          auto_checkout: false,
         }
       })
     } else {

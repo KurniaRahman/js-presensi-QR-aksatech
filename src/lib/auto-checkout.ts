@@ -47,24 +47,17 @@ export async function runAutoCheckout(): Promise<{ updatedCount: number; error?:
       return { updatedCount: 0 }
     }
 
-    // Set clock_out ke 23:59:00 waktu lokal hari tersebut
-    const [y, m, d] = yesterdayStr.split('-').map(Number)
-    const autoCheckoutTime = new Date(y, m - 1, d, 23, 59, 0, 0)
-
-    // Update semua record sekaligus menggunakan Promise.all
+    // Biarkan clock_out dan duration_minutes tetap null sesuai kesepakatan:
+    // Kolom jam keluar dibiarkan kosong (-) dengan badge merah "⚠️ Lupa Checkout"
     await Promise.all(
       incomplete.map(record => {
-        const clockInMs   = new Date(record.clock_in).getTime()
-        const clockOutMs  = autoCheckoutTime.getTime()
-        const durationMin = Math.max(0, Math.round((clockOutMs - clockInMs) / 60000))
-
         return db.attendance.update({
           where: { id: record.id },
           data: {
-            clock_out:        autoCheckoutTime,
-            duration_minutes: durationMin,
+            clock_out:        null,
+            duration_minutes: null,
             auto_checkout:    true,
-            notes:            `⚠️ Auto-checkout sistem: Karyawan (${record.user.full_name}) tidak melakukan presensi pulang pada ${yesterdayStr}. Waktu pulang otomatis dicatat pukul 23:59. Mohon admin verifikasi dan koreksi jika diperlukan.`,
+            notes:            `⚠️ Lupa Checkout: Karyawan (${record.user.full_name}) tidak melakukan presensi pulang pada ${yesterdayStr}. Silakan admin verifikasi dan koreksi jika diperlukan.`,
           }
         })
       })

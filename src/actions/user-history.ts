@@ -16,6 +16,8 @@ export interface UserHistoryItem {
     clock_in: Date
     clock_out: Date | null
     duration_minutes: number | null
+    auto_checkout?: boolean
+    notes?: string | null
   } | null
   overtime: {
     id: string
