@@ -89,7 +89,7 @@ export default async function DroneLogbookPage() {
                   {isSupervisor 
                     ? "Project Manager • Manajemen & Monitoring Drone" 
                     : isGuest 
-                      ? "External Guest • Viewer Log Perawatan Drone" 
+                      ? "Guest • Viewer Log Perawatan Drone" 
                       : "Engineer • Perawatan & Servis Drone"}
                 </span>
               </div>
