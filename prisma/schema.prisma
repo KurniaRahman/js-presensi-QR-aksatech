@@ -44,6 +44,7 @@ model User {
   approvedOvertimes     Overtime[]            @relation("PMApprovedOvertimes")
   activityLogs          ActivityLog[]         @relation("UserActivityLogs")
   droneMaintenanceLogs  DroneMaintenanceLog[] @relation("UserDroneMaintenanceLogs")
+  droneFlightLogs       DroneFlightLog[]      @relation("UserDroneFlightLogs")
 
   @@map("users")
 }
@@ -115,6 +116,7 @@ model Drone {
   updated_at    DateTime @updatedAt
 
   maintenance_logs DroneMaintenanceLog[]
+  flight_logs      DroneFlightLog[]
 
   @@map("drones")
 }
@@ -135,4 +137,25 @@ model DroneMaintenanceLog {
   user  User  @relation("UserDroneMaintenanceLogs", fields: [user_id], references: [id])
 
   @@map("drone_maintenance_logs")
+}
+
+model DroneFlightLog {
+  id               String   @id @default(uuid()) @db.Uuid
+  drone_id         String   @db.Uuid
+  user_id          String   @db.Uuid
+  flight_date      DateTime @db.Date
+  takeoff_time     String   // Format "HH:mm" (contoh: "09:30")
+  landing_time     String   // Format "HH:mm" (contoh: "10:15")
+  duration_minutes Int      // Selisih dalam menit
+  mission_type     String   // "TRAINING" (Latihan) | "MISSION" (Misi)
+  battery_1        String   // Kode baterai 1 (contoh: "A")
+  battery_2        String?  // Kode baterai 2 (untuk model AR & Revolver)
+  notes            String?  @db.Text
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  drone Drone @relation(fields: [drone_id], references: [id], onDelete: Cascade)
+  user  User  @relation("UserDroneFlightLogs", fields: [user_id], references: [id])
+
+  @@map("drone_flight_logs")
 }
