@@ -26,7 +26,8 @@ export default auth((req) => {
   if (role === 'GUEST') {
     if (
       pathname.startsWith('/dashboard') &&
-      !pathname.startsWith('/dashboard/drones')
+      !pathname.startsWith('/dashboard/drones') &&
+      !pathname.startsWith('/dashboard/flights')
     ) {
       return NextResponse.redirect(new URL('/dashboard/drones', req.url))
     }

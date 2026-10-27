@@ -65,7 +65,7 @@ export type FlightLogItem = {
 }
 
 interface FlightLogContainerProps {
-  userRole: "STAFF" | "PM"
+  userRole: "STAFF" | "PM" | "GUEST"
   currentUserId: string
   initialDrones: DroneItem[]
   initialLogs: FlightLogItem[]
@@ -85,6 +85,7 @@ export function FlightLogContainer({
 }: FlightLogContainerProps) {
   const [isPending, startTransition] = useTransition()
   const isSupervisor = userRole === "PM"
+  const isGuest = userRole === "GUEST"
 
   // Master Drones & Flight Logs
   const [drones] = useState<DroneItem[]>(initialDrones)
@@ -556,14 +557,16 @@ export function FlightLogContainer({
               <span>{isExporting ? "Mengunduh..." : "Export Excel"}</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => openAddModal()}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#1F77C5] text-white hover:bg-blue-600 transition-all shadow-xs active:scale-[0.98]"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Catat Penerbangan</span>
-            </button>
+            {!isGuest && (
+              <button
+                type="button"
+                onClick={() => openAddModal()}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#1F77C5] text-white hover:bg-blue-600 transition-all shadow-xs active:scale-[0.98]"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Catat Penerbangan</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -591,7 +594,7 @@ export function FlightLogContainer({
               <option value="ALL">Semua Unit Drone</option>
               {drones.map((d) => (
                 <option key={d.id} value={d.id}>
-                  {d.serial_number} • {d.model_name}
+                  {d.serial_number}
                 </option>
               ))}
             </select>
@@ -633,21 +636,23 @@ export function FlightLogContainer({
           <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto">
             Belum ada catatan penerbangan yang sesuai dengan filter. Silakan ubah filter atau catat penerbangan baru.
           </p>
-          <button
-            type="button"
-            onClick={() => openAddModal()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1F77C5] text-white text-xs font-bold shadow-xs hover:bg-blue-600 transition-all mt-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Catat Penerbangan Baru</span>
-          </button>
+          {!isGuest && (
+            <button
+              type="button"
+              onClick={() => openAddModal()}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1F77C5] text-white text-xs font-bold shadow-xs hover:bg-blue-600 transition-all mt-2"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Catat Penerbangan Baru</span>
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
           {filteredLogs.map((item) => {
             const dateObj = typeof item.flight_date === "string" ? new Date(item.flight_date) : item.flight_date
             const isOwner = item.user_id === currentUserId
-            const canManage = isOwner || isSupervisor
+            const canManage = !isGuest && (isOwner || isSupervisor)
 
             const isTraining = item.mission_type === "TRAINING"
 
@@ -748,11 +753,11 @@ export function FlightLogContainer({
                   </div>
 
                   {canManage && (
-                    <div className="flex items-center gap-1 mt-1">
+                    <div className="flex items-center gap-1.5 mt-1 sm:mt-0">
                       <button
                         type="button"
                         onClick={() => openEditModal(item)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-[#1F77C5] hover:bg-blue-50 transition-colors"
+                        className="p-1.5 rounded-lg bg-blue-50 border border-blue-200 text-[#1F77C5] hover:bg-blue-100 hover:border-blue-300 transition-all shadow-xs"
                         title="Edit Catatan"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -760,7 +765,7 @@ export function FlightLogContainer({
                       <button
                         type="button"
                         onClick={() => setDeleteTarget(item)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        className="p-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 hover:border-rose-300 transition-all shadow-xs"
                         title="Hapus Catatan"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -808,13 +813,19 @@ export function FlightLogContainer({
                 <select
                   value={formDroneId}
                   onChange={(e) => setFormDroneId(e.target.value)}
+                  onInvalid={(e) => {
+                    if (e.currentTarget.validity.valueMissing) {
+                      e.currentTarget.setCustomValidity("Silakan pilih unit drone terlebih dahulu.")
+                    }
+                  }}
+                  onInput={(e) => (e.target as HTMLSelectElement).setCustomValidity("")}
                   className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer font-semibold bg-white text-slate-800"
                   required
                 >
                   <option value="" disabled>Pilih Drone...</option>
                   {drones.map((d) => (
                     <option key={d.id} value={d.id}>
-                      {d.serial_number} • {d.model_name}
+                      {d.serial_number}
                     </option>
                   ))}
                 </select>
@@ -835,6 +846,12 @@ export function FlightLogContainer({
                   type="date"
                   value={formDate}
                   onChange={(e) => setFormDate(e.target.value)}
+                  onInvalid={(e) => {
+                    if (e.currentTarget.validity.valueMissing) {
+                      e.currentTarget.setCustomValidity("Silakan pilih tanggal penerbangan.")
+                    }
+                  }}
+                  onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
                   className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none font-medium bg-white text-slate-800"
                   required
                 />
@@ -851,6 +868,12 @@ export function FlightLogContainer({
                     type="time"
                     value={formTakeoff}
                     onChange={(e) => setFormTakeoff(e.target.value)}
+                    onInvalid={(e) => {
+                      if (e.currentTarget.validity.valueMissing) {
+                        e.currentTarget.setCustomValidity("Silakan tentukan jam take-off.")
+                      }
+                    }}
+                    onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
                     className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none font-mono font-bold text-slate-800 bg-white"
                     required
                   />
@@ -865,6 +888,12 @@ export function FlightLogContainer({
                     type="time"
                     value={formLanding}
                     onChange={(e) => setFormLanding(e.target.value)}
+                    onInvalid={(e) => {
+                      if (e.currentTarget.validity.valueMissing) {
+                        e.currentTarget.setCustomValidity("Silakan tentukan jam landing.")
+                      }
+                    }}
+                    onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
                     className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none font-mono font-bold text-slate-800 bg-white"
                     required
                   />
@@ -934,6 +963,12 @@ export function FlightLogContainer({
                       placeholder="Contoh: A"
                       value={formBattery1}
                       onChange={(e) => setFormBattery1(e.target.value.toUpperCase().slice(0, 2))}
+                      onInvalid={(e) => {
+                        if (e.currentTarget.validity.valueMissing) {
+                          e.currentTarget.setCustomValidity("Masukkan kode nomor baterai 1 (contoh: A).")
+                        }
+                      }}
+                      onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
                       className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none font-mono font-extrabold uppercase text-center text-slate-800 bg-white"
                       required
                     />
@@ -949,6 +984,12 @@ export function FlightLogContainer({
                         placeholder="Contoh: B"
                         value={formBattery2}
                         onChange={(e) => setFormBattery2(e.target.value.toUpperCase().slice(0, 2))}
+                        onInvalid={(e) => {
+                          if (e.currentTarget.validity.valueMissing) {
+                            e.currentTarget.setCustomValidity("Masukkan kode nomor baterai 2 (contoh: B).")
+                          }
+                        }}
+                        onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
                         className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none font-mono font-extrabold uppercase text-center text-slate-800 bg-white"
                         required
                       />
@@ -1019,43 +1060,47 @@ export function FlightLogContainer({
             }
           }}
         >
-          <div className="bg-white rounded-3xl p-5 sm:p-6 max-w-sm w-full shadow-2xl border border-slate-200 space-y-4 animate-scale-up">
-            <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 mx-auto">
-              <Trash2 className="w-6 h-6" />
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-slate-200 space-y-4 animate-scale-up relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500" />
+
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center shrink-0 shadow-xs">
+                <Trash2 className="w-6 h-6" />
+              </div>
+
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <h3 className="text-base sm:text-lg font-bold text-slate-800">
+                  Hapus Catatan Penerbangan?
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                  Apakah Anda yakin ingin menghapus catatan penerbangan untuk drone{" "}
+                  <strong className="text-slate-800 font-mono">{deleteTarget.drone?.serial_number}</strong> ({deleteTarget.takeoff_time} - {deleteTarget.landing_time})?
+                </p>
+              </div>
             </div>
 
-            <div className="text-center space-y-1.5">
-              <h3 className="text-base font-bold text-slate-800">Hapus Log Penerbangan?</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Catatan penerbangan unit{" "}
-                <strong className="text-slate-700">{deleteTarget.drone?.serial_number}</strong> pada jam{" "}
-                {deleteTarget.takeoff_time} - {deleteTarget.landing_time} akan dihapus permanen.
-              </p>
+            <div className="text-[11px] text-rose-600 font-medium flex items-center gap-2 bg-rose-50/80 px-3 py-2 rounded-xl border border-rose-100">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+              <span>Tindakan ini bersifat permanen dan data log penerbangan tidak dapat dipulihkan.</span>
             </div>
 
-            <div className="flex items-center gap-2 pt-2">
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
               <button
                 type="button"
-                onClick={() => setDeleteTarget(null)}
                 disabled={isDeleting}
-                className="flex-1 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                onClick={() => setDeleteTarget(null)}
+                className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-50"
               >
                 Batal
               </button>
               <button
                 type="button"
-                onClick={handleDeleteConfirm}
                 disabled={isDeleting}
-                className="flex-1 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 transition-colors shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-60"
+                onClick={handleDeleteConfirm}
+                className="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
               >
-                {isDeleting ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Menghapus...</span>
-                  </>
-                ) : (
-                  <span>Hapus</span>
-                )}
+                {isDeleting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>{isDeleting ? "Menghapus..." : "Ya, Hapus"}</span>
               </button>
             </div>
           </div>

@@ -53,7 +53,7 @@ export async function getDroneFlightLogs(filters?: {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
 
-  if (session.user.role !== "STAFF" && session.user.role !== "PM") {
+  if (session.user.role !== "STAFF" && session.user.role !== "PM" && session.user.role !== "GUEST") {
     throw new Error("Akses ditolak")
   }
 
