@@ -35,6 +35,10 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
+  if (session.user.role === 'GUEST') {
+    redirect('/dashboard/drones')
+  }
+
   const now = new Date()
 
   // Dapatkan sapaan dinamis berdasarkan jam saat ini (WIB / Asia/Jakarta)

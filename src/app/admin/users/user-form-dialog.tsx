@@ -105,8 +105,8 @@ export function UserFormDialog({
             </div>
             <p className="text-xs text-slate-500">
               {userToEdit 
-                ? "Ubah informasi profil, peran, atau reset kata sandi akun karyawan." 
-                : "Daftarkan akun karyawan baru ke dalam sistem HRIS Aksa Tech."}
+                ? "Ubah informasi profil, peran, atau reset kata sandi akun pengguna." 
+                : "Daftarkan akun pengguna baru ke dalam portal terpadu Aksa Tech."}
             </p>
           </DialogHeader>
           
@@ -123,7 +123,7 @@ export function UserFormDialog({
             </div>
             
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Email Perusahaan</label>
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Email Perusahaan / Akun</label>
               <Input 
                 name="email" 
                 type="email" 
@@ -156,6 +156,9 @@ export function UserFormDialog({
                   </SelectItem>
                   <SelectItem value="MAGANG" className="rounded-lg text-sm font-medium cursor-pointer">
                     Magang
+                  </SelectItem>
+                  <SelectItem value="GUEST" className="rounded-lg text-sm font-medium cursor-pointer text-indigo-700">
+                    Guest (External Client / Auditor)
                   </SelectItem>
                 </SelectContent>
               </Select>

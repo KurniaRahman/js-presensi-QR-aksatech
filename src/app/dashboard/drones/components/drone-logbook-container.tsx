@@ -82,7 +82,7 @@ export type MaintenanceLogItem = {
 }
 
 interface DroneLogbookContainerProps {
-  userRole: "STAFF" | "PM"
+  userRole: "STAFF" | "PM" | "GUEST"
   currentUserId: string
   initialDrones: DroneItem[]
   initialLogs: MaintenanceLogItem[]
@@ -101,6 +101,7 @@ export function DroneLogbookContainer({
   todayStr,
 }: DroneLogbookContainerProps) {
   const isPM = userRole === "PM"
+  const isGuest = userRole === "GUEST"
 
   // Main Tabs: "fleet" (Katalog Armada Drone) vs "logs" (Riwayat Servis Global)
   const [activeTab, setActiveTab] = useState<"fleet" | "logs">("fleet")
@@ -675,15 +676,17 @@ export function DroneLogbookContainer({
             </button>
           )}
 
-          {/* Catat Perawatan */}
-          <button
-            type="button"
-            onClick={() => openAddLogModal()}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#0B2545] to-[#1F77C5] text-white text-xs font-bold shadow-sm hover:opacity-95 transition-all active:scale-[0.98] flex-1 sm:flex-initial"
-          >
-            <Wrench className="w-4 h-4" />
-            <span>Catat Perawatan</span>
-          </button>
+          {/* Catat Perawatan (Hanya untuk STAFF & PM) */}
+          {!isGuest && (
+            <button
+              type="button"
+              onClick={() => openAddLogModal()}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#0B2545] to-[#1F77C5] text-white text-xs font-bold shadow-sm hover:opacity-95 transition-all active:scale-[0.98] flex-1 sm:flex-initial"
+            >
+              <Wrench className="w-4 h-4" />
+              <span>Catat Perawatan</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -906,14 +909,16 @@ export function DroneLogbookContainer({
                           <span>Logbook</span>
                         </button>
 
-                        <button
-                          type="button"
-                          onClick={() => openAddLogModal(drone.id)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#1F77C5] text-white text-xs font-bold hover:bg-blue-600 transition-all shadow-xs"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>Servis</span>
-                        </button>
+                        {!isGuest && (
+                          <button
+                            type="button"
+                            onClick={() => openAddLogModal(drone.id)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#1F77C5] text-white text-xs font-bold hover:bg-blue-600 transition-all shadow-xs"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Servis</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1071,21 +1076,23 @@ export function DroneLogbookContainer({
               <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto">
                 Belum ada catatan servis yang sesuai dengan filter tanggal atau drone yang dipilih.
               </p>
-              <button
-                type="button"
-                onClick={() => openAddLogModal()}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1F77C5] text-white text-xs font-bold shadow-xs hover:bg-blue-600 transition-all mt-2"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Catat Perawatan Sekarang</span>
-              </button>
+              {!isGuest && (
+                <button
+                  type="button"
+                  onClick={() => openAddLogModal()}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1F77C5] text-white text-xs font-bold shadow-xs hover:bg-blue-600 transition-all mt-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Catat Perawatan Sekarang</span>
+                </button>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
               {filteredLogs.map(item => {
                 const dateObj = typeof item.maintenance_date === "string" ? new Date(item.maintenance_date) : item.maintenance_date
                 const isOwner = item.user_id === currentUserId
-                const canEditOrDelete = isOwner || isPM
+                const canEditOrDelete = !isGuest && (isOwner || isPM)
 
                 return (
                   <div
@@ -1564,18 +1571,20 @@ export function DroneLogbookContainer({
                   <div className="p-8 text-center border border-dashed border-slate-200 rounded-2xl space-y-3">
                     <History className="w-8 h-8 text-slate-300 mx-auto" />
                     <p className="text-xs text-slate-500">Belum ada catatan riwayat perawatan untuk unit drone ini.</p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const targetId = selectedDroneForDetail.id
-                        setSelectedDroneForDetail(null)
-                        openAddLogModal(targetId)
-                      }}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#1F77C5] text-white text-xs font-bold"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Catat Servis Pertama</span>
-                    </button>
+                    {!isGuest && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const targetId = selectedDroneForDetail.id
+                          setSelectedDroneForDetail(null)
+                          openAddLogModal(targetId)
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#1F77C5] text-white text-xs font-bold"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Catat Servis Pertama</span>
+                      </button>
+                    )}
                   </div>
                 )
               }
@@ -1634,18 +1643,20 @@ export function DroneLogbookContainer({
                 Tutup
               </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  const targetId = selectedDroneForDetail.id
-                  setSelectedDroneForDetail(null)
-                  openAddLogModal(targetId)
-                }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1F77C5] text-white text-xs font-bold shadow-xs hover:bg-blue-600 transition-all"
-              >
-                <Plus className="w-4 h-4" />
-                <span>+ Catat Servis Unit Ini</span>
-              </button>
+              {!isGuest && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const targetId = selectedDroneForDetail.id
+                    setSelectedDroneForDetail(null)
+                    openAddLogModal(targetId)
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1F77C5] text-white text-xs font-bold shadow-xs hover:bg-blue-600 transition-all"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Catat Servis Unit Ini</span>
+                </button>
+              )}
             </div>
           </div>
         </div>

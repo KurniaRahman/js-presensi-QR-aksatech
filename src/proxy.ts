@@ -9,6 +9,7 @@ export default auth((req) => {
   if (pathname.startsWith('/login')) {
     if (isLoggedIn) {
       if (role === 'ADMIN') return NextResponse.redirect(new URL('/admin', req.url))
+      if (role === 'GUEST') return NextResponse.redirect(new URL('/dashboard/drones', req.url))
       return NextResponse.redirect(new URL('/dashboard', req.url))
     }
     return NextResponse.next()
@@ -22,8 +23,19 @@ export default auth((req) => {
     return NextResponse.redirect(new URL('/forbidden', req.url))
   }
 
+  if (role === 'GUEST') {
+    if (
+      pathname.startsWith('/dashboard') &&
+      !pathname.startsWith('/dashboard/drones') &&
+      !pathname.startsWith('/dashboard/flights')
+    ) {
+      return NextResponse.redirect(new URL('/dashboard/drones', req.url))
+    }
+  }
+
   if (pathname === '/') {
     if (role === 'ADMIN') return NextResponse.redirect(new URL('/admin', req.url))
+    if (role === 'GUEST') return NextResponse.redirect(new URL('/dashboard/drones', req.url))
     return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 

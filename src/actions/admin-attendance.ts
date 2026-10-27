@@ -16,7 +16,7 @@ export async function getUsersForOverride() {
   if (session?.user?.role !== 'ADMIN') throw new Error("Unauthorized")
 
   return await db.user.findMany({
-    where: { is_active: true },
+    where: { is_active: true, role: { not: 'GUEST' } },
     select: { id: true, full_name: true, role: true },
     orderBy: { full_name: 'asc' }
   })
@@ -93,6 +93,7 @@ export async function getReportData(startDate: string, endDate: string) {
 
   const users = await db.user.findMany({
     where: {
+      role: { not: 'GUEST' },
       OR: [
         { is_active: true },
         { attendances: { some: { record_date: { gte: start, lte: end } } } }
@@ -195,6 +196,7 @@ export async function getDailyRecords(startDate: string, endDate: string) {
 
   const users = await db.user.findMany({
     where: {
+      role: { not: 'GUEST' },
       OR: [
         { is_active: true },
         { attendances: { some: { record_date: { gte: start, lte: end } } } }

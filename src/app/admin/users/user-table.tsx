@@ -24,6 +24,7 @@ const getRoleLabel = (role: string) => {
     case "PM": return "Project Manager"
     case "MAGANG": return "Magang"
     case "STAFF": return "Engineer"
+    case "GUEST": return "Guest (External)"
     default: return role
   }
 }
@@ -129,6 +130,7 @@ export function UserTable({ users }: { users: User[] }) {
           role === "ADMIN" ? "bg-purple-50 text-purple-700 border-purple-200" :
           role === "PM" ? "bg-blue-50 text-blue-700 border-blue-200" :
           role === "MAGANG" ? "bg-amber-50 text-amber-700 border-amber-200" :
+          role === "GUEST" ? "bg-indigo-50 text-indigo-700 border-indigo-200" :
           "bg-slate-100 text-slate-700 border-slate-200"
         
         return (
@@ -204,6 +206,7 @@ export function UserTable({ users }: { users: User[] }) {
           <option value="PM">Project Manager (PM)</option>
           <option value="STAFF">Engineer</option>
           <option value="MAGANG">Magang</option>
+          <option value="GUEST">Guest (External)</option>
         </select>
       </div>
 
@@ -235,7 +238,7 @@ export function UserTable({ users }: { users: User[] }) {
       {/* Action Header Card */}
       <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm flex justify-between items-center flex-wrap gap-3">
         <div className="flex items-center space-x-2.5">
-          <h2 className="text-lg sm:text-xl font-bold text-slate-800">Daftar Akun Karyawan</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-slate-800">Daftar Akun Pengguna</h2>
           <span className="text-xs bg-blue-50 text-[#1F77C5] font-bold px-2.5 py-0.5 rounded-full border border-blue-200/60">
             {filteredUsers.length} Total
           </span>
