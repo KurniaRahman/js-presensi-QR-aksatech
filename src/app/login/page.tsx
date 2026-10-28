@@ -71,7 +71,7 @@ export default async function LoginPage({
                   Sesi Telah Berakhir
                 </p>
                 <p className="text-xs text-amber-700 leading-relaxed">
-                  Demi keamanan akun, sesi login dibatasi maksimal 2 jam. Silakan masuk kembali untuk melanjutkan.
+                  Demi keamanan akun, sesi login telah berakhir (masa aktif 7 hari). Silakan masuk kembali untuk melanjutkan.
                 </p>
               </div>
             </div>

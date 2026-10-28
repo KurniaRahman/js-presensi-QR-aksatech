@@ -620,7 +620,7 @@ export default async function DashboardPage() {
             <div className="pt-2 border-t border-white/15 flex items-center justify-between text-[11px] text-blue-200 relative z-10">
               <span className="flex items-center gap-1.5 font-medium">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                Sesi login aman (2 jam)
+                Sesi login aman (7 hari)
               </span>
               <span className="font-mono text-white/90 font-bold">WIB (UTC+7)</span>
             </div>
