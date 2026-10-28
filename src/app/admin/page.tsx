@@ -1,22 +1,16 @@
 import { auth } from "@/auth"
 import { prisma as db } from "@/lib/prisma"
-import { DataTable } from "@/components/ui/data-table"
-import { attendanceColumns } from "./components/attendance-columns"
 import { syncAlphaAttendance } from "@/lib/sync-alpha"
 import { DigitalClock } from "@/app/dashboard/components/digital-clock"
+import { RealtimeAttendanceBoard } from "./components/realtime-attendance-board"
 import Link from "next/link"
 import { 
   Users, 
   Clock, 
-  CalendarCheck, 
   AlertCircle, 
-  ScanLine, 
-  FileDown, 
   Sparkles, 
   ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
-  Compass
+  CheckCircle2
 } from "lucide-react"
 
 export const dynamic = 'force-dynamic'
@@ -45,16 +39,20 @@ export default async function AdminDashboardPage() {
   const todayStart = new Date(`${todayStr}T00:00:00.000Z`)
   const todayEnd = new Date(`${todayStr}T23:59:59.999Z`)
 
-  // Fetch Dashboard Stats, Latest Attendances, dan Sinkronisasi ALPHA secara paralel
-  const [totalUsers, pendingOvertimes, todayAttendances, todayAlphas, recentAttendances] = await Promise.all([
-    db.user.count({ where: { is_active: true, role: { not: 'GUEST' } } }),
-    db.overtime.count({ where: { status: 'PENDING' } }),
-    db.attendance.count({ 
-      where: { 
-        record_date: { gte: todayStart, lte: todayEnd },
-        status: 'HADIR'
-      } 
+  // Fetch Dashboard Stats, Seluruh Karyawan Internal Aktif, Attendances Hari Ini, dan Sinkronisasi ALPHA secara paralel
+  const [
+    allEmployees,
+    pendingOvertimes,
+    todayAlphas,
+    todayAttendancesList,
+    _syncResult
+  ] = await Promise.all([
+    db.user.findMany({
+      where: { is_active: true, role: { not: 'GUEST' } },
+      select: { id: true, full_name: true, role: true, email: true },
+      orderBy: { full_name: 'asc' }
     }),
+    db.overtime.count({ where: { status: 'PENDING' } }),
     db.attendance.count({ 
       where: { 
         record_date: { gte: todayStart, lte: todayEnd },
@@ -72,11 +70,38 @@ export default async function AdminDashboardPage() {
       },
       orderBy: {
         clock_in: 'desc'
-      },
-      take: 15
+      }
     }),
     syncAlphaAttendance()
-  ]).then(([u, ot, att, alp, rec]) => [u, ot, att, alp, rec] as const)
+  ])
+
+  const totalUsers = allEmployees.length
+
+  // Filter karyawan yang sudah presensi masuk (HADIR, SAKIT, atau IZIN)
+  const attendedRecords = todayAttendancesList.filter(a => a.status !== 'ALPHA')
+  const attendedCount = attendedRecords.length
+
+  // Set ID karyawan yang sudah presensi
+  const attendedUserIds = new Set(attendedRecords.map(a => a.user_id))
+
+  // Mapping ALPHA record hari ini jika ada
+  const alphaUserMap = new Map(
+    todayAttendancesList.filter(a => a.status === 'ALPHA').map(a => [a.user_id, a])
+  )
+
+  // Cari karyawan internal yang belum presensi masuk hari ini
+  const unattendedUsers = allEmployees
+    .filter(emp => !attendedUserIds.has(emp.id))
+    .map(emp => ({
+      id: emp.id,
+      full_name: emp.full_name,
+      role: emp.role,
+      email: emp.email,
+      status: alphaUserMap.has(emp.id) ? 'ALPHA' : 'BELUM_HADIR'
+    }))
+
+  const unattendedCount = unattendedUsers.length
+  const attendanceRate = totalUsers > 0 ? Math.round((attendedCount / totalUsers) * 100) : 0
 
   // Hitung berapa yang auto-checkout hari ini (untuk notifikasi admin)
   const autoCheckoutCount = await db.attendance.count({
@@ -176,20 +201,37 @@ export default async function AdminDashboardPage() {
           </div>
         </Link>
 
-        {/* Card 2: Hadir Hari Ini (Aksen Emerald) */}
-        <div className="p-5 rounded-2xl border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50/70 via-white to-white border-t border-r border-b border-emerald-200/90 shadow-2xs hover:shadow-md hover:border-emerald-300 hover:-translate-y-0.5 transition-all space-y-2">
+        {/* Card 2: Hadir Hari Ini (Aksen Emerald dengan Rasio & Progress Bar) */}
+        <div className="p-5 rounded-2xl border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50/70 via-white to-white border-t border-r border-b border-emerald-200/90 shadow-2xs hover:shadow-md hover:border-emerald-300 hover:-translate-y-0.5 transition-all space-y-2.5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-black text-emerald-800 uppercase tracking-wider">Hadir Hari Ini</span>
             <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-xs shadow-emerald-500/20">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-3xl font-black text-emerald-700 font-mono">
-            {todayAttendances} <span className="text-xs font-bold text-slate-500 font-sans">Karyawan</span>
-          </p>
-          <p className="text-[11px] font-medium text-slate-400 pt-1">
-            Presensi terverifikasi valid
-          </p>
+          <div className="flex items-baseline gap-1.5">
+            <p className="text-3xl font-black text-emerald-700 font-mono">
+              {attendedCount}
+            </p>
+            <p className="text-xl font-bold text-slate-400 font-mono">
+              / {totalUsers}
+            </p>
+            <span className="text-xs font-bold text-slate-500 font-sans ml-1">Karyawan</span>
+          </div>
+
+          {/* Progress Bar & Sub-keterangan rasio */}
+          <div className="space-y-1.5 pt-0.5">
+            <div className="w-full bg-emerald-100/70 h-1.5 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                style={{ width: `${attendanceRate}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between text-[11px] font-medium">
+              <span className="text-emerald-700 font-bold">{attendanceRate}% Presensi</span>
+              <span className="text-amber-700 font-semibold">{unattendedCount} Belum</span>
+            </div>
+          </div>
         </div>
 
         {/* Card 3: Lembur Pending (Aksen Amber) */}
@@ -230,42 +272,19 @@ export default async function AdminDashboardPage() {
 
       </div>
 
-      {/* 4. Real-time Attendances Table Card */}
-      <div className="bg-white rounded-3xl shadow-[0_4px_25px_-5px_rgba(31,119,197,0.06)] border border-slate-200/90 overflow-hidden relative">
-        {/* Top Accent Stripe */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-[#0B2545] via-[#1F77C5] to-sky-400"></div>
-
-        <div className="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-blue-50/40 via-white to-slate-50/20">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#1F77C5] border border-blue-200/80 flex items-center justify-center shadow-2xs">
-              <Compass className="w-5 h-5 text-[#1F77C5]" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
-                Data Presensi Hari Ini (Real-Time)
-              </h2>
-              <p className="text-[11px] text-slate-400">
-                {now.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Live Monitoring
-            </span>
-          </div>
-        </div>
-
-        <div className="p-4 sm:p-6">
-          <DataTable 
-            columns={attendanceColumns} 
-            data={recentAttendances} 
-            searchPlaceholder="Cari presensi atau nama karyawan..."
-          />
-        </div>
-      </div>
+      {/* 4. Real-time Attendances Comparison Board */}
+      <RealtimeAttendanceBoard
+        attendedRecords={attendedRecords}
+        unattendedUsers={unattendedUsers}
+        totalEmployees={totalUsers}
+        dateFormatted={now.toLocaleDateString('id-ID', {
+          timeZone: 'Asia/Jakarta',
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })}
+      />
 
     </div>
   )

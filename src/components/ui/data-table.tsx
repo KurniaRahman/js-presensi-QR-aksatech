@@ -29,6 +29,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[]
   searchPlaceholder?: string
   filterControls?: React.ReactNode
+  pageSize?: number
 }
 
 export function DataTable<TData, TValue>({
@@ -36,9 +37,21 @@ export function DataTable<TData, TValue>({
   data,
   searchPlaceholder = "Cari data...",
   filterControls,
+  pageSize = 20,
 }: DataTableProps<TData, TValue>) {
   const [globalFilter, setGlobalFilter] = React.useState("")
   const [sorting, setSorting] = React.useState<SortingState>([])
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize,
+  })
+
+  React.useEffect(() => {
+    setPagination((prev) => ({
+      ...prev,
+      pageSize,
+    }))
+  }, [pageSize])
 
   const table = useReactTable({
     data,
@@ -48,9 +61,11 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
+    onPaginationChange: setPagination,
     state: {
       globalFilter,
       sorting,
+      pagination,
     },
     onGlobalFilterChange: setGlobalFilter,
   })
@@ -145,6 +160,11 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center justify-between text-xs text-slate-500 py-1">
         <div>
           Total <strong>{table.getFilteredRowModel().rows.length}</strong> data ditampilkan
+          {table.getPageCount() > 1 && (
+            <span className="text-slate-400 ml-2">
+              (Halaman {table.getState().pagination.pageIndex + 1} dari {table.getPageCount()})
+            </span>
+          )}
         </div>
         <div className="flex items-center space-x-2">
           <Button
