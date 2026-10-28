@@ -5,8 +5,8 @@
 * **Proyek:** Sistem Informasi Presensi & Manajemen Lembur (MVP)  
 * **Perusahaan:** PT Aksa Tech  
 * **Role/Target Audien:** Solo Developer / Team / AI Code Assistant  
-* **Versi Dokumen:** 1.2 (Updated with Professional Dev-Staging-Production Pipeline Scheme)  
-* **Tanggal Pembaruan:** 26 Oktober 2026
+* **Versi Dokumen:** 1.3 (Updated with Mandatory --no-ff Production Release & Dedicated Docs Branching)  
+* **Tanggal Pembaruan:** 27 Oktober 2026
 
 ## **1\. Pendahuluan**
 
@@ -47,30 +47,36 @@ Untuk menjamin stabilitas sistem, kualitas kode, dan mencegah *breaking changes*
 Proyek ini menerapkan model alur cabang terstruktur (*Environment-driven GitFlow*):
 
 ```
-[Local Dev: feature/*] ───> [Staging: develop] ───> [Production: main]
-           │                                                │
-           └─────────────> [Hotfix: hotfix/*] ──────────────┘
+[Local Dev: feature/* | docs/*] ───> [Staging: develop] ───> [Production: main]
+                   │                                                  │
+                   └──────────────> [Hotfix: hotfix/*] ───────────────┘
 ```
 
 1. **`main` (Production Branch - Strictly Protected):**
    * Merepresentasikan kode yang sedang berjalan di *server production* publik.
    * Bersifat **suci & stabil** (*always deployable*).
    * **DILARANG KERAS** melakukan commit langsung (*direct commit/push*) ke branch `main`.
-   * Hanya menerima kode melalui *Pull Request (PR)* atau *Merge* teruji dari branch `develop` atau `hotfix/*`.
+   * Hanya menerima kode melalui *Pull Request (PR)* atau *Merge* teruji dari branch `develop` (wajib menggunakan `--no-ff`) atau `hotfix/*`.
 
 2. **`develop` (Staging / Pre-Production Branch):**
-   * Cabang integrasi seluruh fitur sebelum dirilis ke produksi.
-   * Terhubung dengan lingkungan *Staging / Preview Deployment*.
+   * Cabang integrasi seluruh fitur dan dokumentasi sebelum dirilis ke produksi.
+   * Terhubung dengan lingkungan *Staging / Preview Deployment* (Vercel Preview).
    * Tempat dilakukannya pengujian integrasi lintas modul, uji coba performa, *QA review*, dan validasi fungsional bersama Project Manager (PM).
 
 3. **`feature/<nama-fitur>` (Feature / Working Branches):**
    * Setiap tugas atau fitur baru wajib dikerjakan pada branch fitur terisolasi yang dicabangkan dari `develop`.
-   * Penamaan standar: `feature/log-aktivitas`, `feature/drone-logbook`, `feature/perbaikan-scan`.
+   * Penamaan standar: `feature/log-aktivitas`, `feature/drone-logbook`, `feature/flight-log`.
    * Setelah fitur tuntas dan lolos verifikasi lokal, branch digabungkan (*merged*) ke `develop`.
 
-4. **`hotfix/<nama-bug>` (Emergency Production Fix):**
+4. **`docs/<topik-dokumen>` (Documentation Branches - General):**
+   * **ATURAN MUTLAK DOKUMEN:** Seluruh penambahan, restrukturisasi, atau pembaruan dokumentasi (baik `docs/rules.md`, `README.md`, panduan arsitektur, SOP teknis, maupun dokumentasi API) **WAJIB dibuatkan branch khusus tersendiri** berawalan `docs/`.
+   * Dilarang keras mencampuradukkan perubahan dokumen ke dalam branch fitur fungsional (`feature/*`) atau perbaikan bug (`fix/*`).
+   * Dicabangkan dari `develop`, dikerjakan terisolasi, diverifikasi, lalu di-*merge* kembali ke `develop`.
+   * Penamaan standar: `docs/update-rules-workflow`, `docs/api-specification`, `docs/setup-guide`.
+
+5. **`hotfix/<nama-bug>` (Emergency Production Fix):**
    * Khusus untuk perbaikan *critical bug* darurat di production yang tidak bisa menunggu siklus rilis reguler.
-   * Dicabangkan langsung dari `main`, diperbaiki, diuji, lalu di-*merge* kembali ke `main` dan di-*backport* ke `develop`.
+   * Dicabangkan langsung dari `main`, diperbaiki, diuji, lalu di-*merge* kembali ke `main` (dengan `--no-ff`) dan di-*backport* ke `develop`.
 
 ---
 
@@ -142,25 +148,28 @@ npm run build
 * Pastikan hak akses role (*RBAC*) berjalan benar: `ADMIN`, `PM`, `STAFF` (Engineer), dan `MAGANG`.
 
 #### **Tahap 5: Rilis ke Production (`main`)**
-Setelah mendapat persetujuan (*sign-off*) dari Project Manager / Tech Lead:
-1. Pindah ke branch `main`:
+Setelah mendapat persetujuan (*sign-off*) dari Project Manager / Tech Lead dan seluruh *DoD* terpenuhi:
+1. Pindah ke branch `main` dan tarik versi remote terbaru:
    ```bash
    git checkout main
    git pull origin main
    ```
-2. Gabungkan dari branch `develop`:
+2. Gabungkan dari branch `develop` **WAJIB MENGGUNAKAN FLAG `--no-ff` (No Fast-Forward)**:
    ```bash
-   git merge develop
+   git merge develop --no-ff -m "release(vX.Y.Z): <Rangkuman Rilis Fitur Utama>"
    ```
+   > [!IMPORTANT]
+   > **MENGAPA FLAG `--no-ff` MUTLAK DIGUNAKAN PADA RELEASE MAIN?**
+   > Jika melakukan *merge* default tanpa `--no-ff`, Git akan melakukan *Fast-Forward* (hanya memajukan pointer `main` ke commit paling ujung di `develop`, seperti commit typo atau commit kecil lainnya). Hal ini berakibat pada dashboard CI/CD hosting (seperti Vercel Production Deployment) yang akan keliru menampilkan pesan rilis produksi tidak jelas dan tidak mencerminkan rilis fitur utama. Dengan `--no-ff`, Git dipaksa membuat *Merge Commit* rilis resmi yang jelas, profesional, dan informatif.
 3. Berikan Tag Versi Rilis (*Semantic Versioning*):
    ```bash
-   git tag -a v1.2.0 -m "Release v1.2.0: Activity Log & Drone Maintenance Logbook"
+   git tag -a v1.0.0 -m "Release v1.0.0: Aksa Tech Integrated Portal with Guest Role & Flight Logbook"
    ```
-4. Push ke remote production:
+4. Push ke remote production beserta tag rilis:
    ```bash
    git push origin main --tags
    ```
-5. Eksekusi sinkronisasi database production secara terencana.
+5. Pantau proses *deployment* otomatis pada dashboard hosting (Vercel) hingga berstatus **Ready / Production**.
 
 ---
 
@@ -173,6 +182,7 @@ Format pesan commit wajib mengikuti konvensi berikut:
 
 * **`feat:`** Penambahan fitur baru bagi pengguna (contoh: `feat(drones): implement drone maintenance logbook`).
 * **`fix:`** Perbaikan bug sistem (contoh: `fix(auth): resolve session timeout redirect loop`).
+* **`docs:`** Pembaruan atau penambahan dokumentasi proyek (contoh: `docs(rules): enforce --no-ff on production releases`).
 * **`refactor:`** Restrukturisasi kode tanpa mengubah alur logika bisnis (contoh: `refactor(activities): convert subtabs to unified timeline`).
 * **`perf:`** Optimasi performa dan kecepatan render (contoh: `perf(dashboard): parallelize query attendance and overtime`).
 * **`style:`** Perbaikan visual, spasi, CSS tanpa mengubah fungsionalitas logika.
