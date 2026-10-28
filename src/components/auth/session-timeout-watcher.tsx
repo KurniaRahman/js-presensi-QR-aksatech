@@ -8,9 +8,9 @@ interface SessionTimeoutWatcherProps {
   loginAt?: number
 }
 
-const TWO_HOURS_IN_MS = 2 * 60 * 60 * 1000 // 2 Jam dalam milidetik
-const WARNING_THRESHOLD_MS = 5 * 60 * 1000  // Peringatan toast 5 menit sebelum habis
-const DEFAULT_COUNTDOWN_SECONDS = 5         // Jeda hitung mundur modal habis sesi
+const SEVEN_DAYS_IN_MS = 7 * 24 * 60 * 60 * 1000 // 7 Hari dalam milidetik
+const WARNING_THRESHOLD_MS = 60 * 60 * 1000       // Peringatan toast 60 menit (1 jam) sebelum habis
+const DEFAULT_COUNTDOWN_SECONDS = 5              // Jeda hitung mundur modal habis sesi
 
 export function SessionTimeoutWatcher({ loginAt }: SessionTimeoutWatcherProps) {
   const [warningRemainingMinutes, setWarningRemainingMinutes] = useState<number | null>(null)
@@ -58,14 +58,14 @@ export function SessionTimeoutWatcher({ loginAt }: SessionTimeoutWatcherProps) {
   useEffect(() => {
     if (!loginAt) return
 
-    const expiresAtMs = loginAt * 1000 + TWO_HOURS_IN_MS
+    const expiresAtMs = loginAt * 1000 + SEVEN_DAYS_IN_MS
 
     const checkExpiration = () => {
       const now = Date.now()
       const remainingMs = expiresAtMs - now
 
       if (remainingMs <= 0) {
-        // Sesi telah habis (2 jam), buka popup modal hitung mundur
+        // Sesi telah habis (7 hari), buka popup modal hitung mundur
         setIsExpired(true)
         setWarningRemainingMinutes(null)
         return
@@ -133,7 +133,7 @@ export function SessionTimeoutWatcher({ loginAt }: SessionTimeoutWatcherProps) {
                 Sesi Login Telah Habis
               </h3>
               <p className="text-xs sm:text-sm text-slate-500 leading-relaxed px-2">
-                Demi keamanan akun Anda, sesi login dibatasi maksimal 2 jam. Sistem akan otomatis mengalihkan Anda ke halaman login tanpa perlu me-refresh browser.
+                Demi keamanan akun Anda, sesi login dibatasi maksimal 7 hari. Sistem akan otomatis mengalihkan Anda ke halaman login tanpa perlu me-refresh browser.
               </p>
             </div>
 
@@ -168,7 +168,7 @@ export function SessionTimeoutWatcher({ loginAt }: SessionTimeoutWatcherProps) {
           <div className="flex-1 text-xs space-y-1 text-left">
             <p className="font-bold text-white text-sm">Pemberitahuan Sesi Keamanan</p>
             <p className="text-amber-100 leading-relaxed">
-              Sesi Anda akan berakhir dalam <strong className="text-white underline">{warningRemainingMinutes} menit</strong> (batas 2 jam). Pastikan pekerjaan Anda telah disimpan.
+              Sesi Anda akan berakhir dalam <strong className="text-white underline">{warningRemainingMinutes} menit</strong> (masa aktif 7 hari). Pastikan pekerjaan Anda telah disimpan.
             </p>
           </div>
           <button 
