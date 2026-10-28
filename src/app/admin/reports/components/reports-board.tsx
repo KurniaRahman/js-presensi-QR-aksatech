@@ -25,7 +25,19 @@ type DailyRecord = {
   overtime: { id: string, duration_hours: number, status: string } | null;
 }
 
+type PresetType = "TODAY" | "7DAYS" | "30DAYS" | "THIS_MONTH" | "CUTOFF_BOOK" | "ALL" | "CUSTOM"
+
+const PRESET_OPTIONS: { id: PresetType; label: string }[] = [
+  { id: "TODAY", label: "Hari Ini" },
+  { id: "7DAYS", label: "7 Hari Terakhir" },
+  { id: "30DAYS", label: "30 Hari Terakhir" },
+  { id: "THIS_MONTH", label: "Bulan Ini (1-31)" },
+  { id: "CUTOFF_BOOK", label: "Periode Buku (20-19)" },
+  { id: "ALL", label: "Semua Waktu" },
+]
+
 export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
+  const [activePreset, setActivePreset] = useState<PresetType>("CUSTOM")
   const [startDate, setStartDate] = useState(() => {
     const now = new Date()
     const y = now.getFullYear()
@@ -47,6 +59,90 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
   const [isLoading, setIsLoading] = useState(false)
   const todayStr = useMemo(() => getDateStringWIB(new Date()), [])
+
+  // Helper cut-off periode buku Aksa (20-19) berdasarkan waktu WIB
+  const getAksaCutoffRange = () => {
+    const currentWibStr = getDateStringWIB(new Date())
+    const [currY, currM, currD] = currentWibStr.split('-').map(Number)
+
+    let startY = currY
+    let startM = currM
+    let endY = currY
+    let endM = currM + 1
+
+    if (currD < 20) {
+      startM = currM - 1
+      endM = currM
+      if (startM < 1) {
+        startM = 12
+        startY = currY - 1
+      }
+    } else {
+      startM = currM
+      endM = currM + 1
+      if (endM > 12) {
+        endM = 1
+        endY = currY + 1
+      }
+    }
+
+    const startStr = `${startY}-${String(startM).padStart(2, '0')}-20`
+    const endStr = `${endY}-${String(endM).padStart(2, '0')}-19`
+    return { startStr, endStr }
+  }
+
+  const applyPreset = (preset: PresetType) => {
+    setActivePreset(preset)
+    const now = new Date()
+    const today = getDateStringWIB(now)
+
+    if (preset === "ALL") {
+      setStartDate("")
+      setEndDate("")
+      return
+    }
+
+    if (preset === "TODAY") {
+      setStartDate(today)
+      setEndDate(today)
+      return
+    }
+
+    if (preset === "7DAYS") {
+      const past = new Date(now)
+      past.setDate(past.getDate() - 6)
+      const pastStr = getDateStringWIB(past)
+      setStartDate(pastStr)
+      setEndDate(today)
+      return
+    }
+
+    if (preset === "30DAYS") {
+      const past = new Date(now)
+      past.setDate(past.getDate() - 29)
+      const pastStr = getDateStringWIB(past)
+      setStartDate(pastStr)
+      setEndDate(today)
+      return
+    }
+
+    if (preset === "THIS_MONTH") {
+      const [currY, currM] = today.split('-').map(Number)
+      const firstDayStr = `${currY}-${String(currM).padStart(2, '0')}-01`
+      const lastDayNum = new Date(currY, currM, 0).getDate()
+      const lastDayStr = `${currY}-${String(currM).padStart(2, '0')}-${String(lastDayNum).padStart(2, '0')}`
+      setStartDate(firstDayStr)
+      setEndDate(lastDayStr)
+      return
+    }
+
+    if (preset === "CUTOFF_BOOK") {
+      const { startStr, endStr } = getAksaCutoffRange()
+      setStartDate(startStr)
+      setEndDate(endStr)
+      return
+    }
+  }
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -188,7 +284,9 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
       const workbook = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan_Absensi")
       
-      XLSX.writeFile(workbook, `Laporan_Absensi_${startDate}_to_${endDate}.xlsx`)
+      const s = startDate || "Awal"
+      const e = endDate || "Sekarang"
+      XLSX.writeFile(workbook, `Laporan_Absensi_${s}_to_${e}.xlsx`)
     } catch (err) {
       alert("Gagal mengexport data")
     } finally {
@@ -279,24 +377,53 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
   return (
     <div className="space-y-6">
       {/* Controls Bar */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col lg:flex-row gap-4 justify-between lg:items-center">
-        <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-stretch sm:items-center">
-          <div className="flex items-center space-x-2 border border-slate-200 rounded-xl px-3.5 py-2 bg-slate-50/70">
-            <CalendarIcon className="w-4 h-4 text-slate-500" />
-            <input 
-              type="date" 
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="bg-transparent text-xs sm:text-sm focus:outline-none text-slate-700 font-medium"
-            />
-            <span className="text-slate-400 font-bold">-</span>
-            <input 
-              type="date" 
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="bg-transparent text-xs sm:text-sm focus:outline-none text-slate-700 font-medium"
-            />
-          </div>
+      <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm space-y-4">
+        {/* Baris 1: Filter Cepat Tanggal Preset */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1 flex items-center gap-1">
+            <CalendarIcon className="w-3.5 h-3.5" /> Rentang:
+          </span>
+          {PRESET_OPTIONS.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => applyPreset(p.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                activePreset === p.id
+                  ? "bg-[#1F77C5] text-white border-[#1F77C5] shadow-xs"
+                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Baris 2: Controls & Actions */}
+        <div className="flex flex-col lg:flex-row gap-4 justify-between lg:items-center pt-3 border-t border-slate-100">
+          <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-stretch sm:items-center">
+            <div className="flex items-center space-x-2 border border-slate-200 rounded-xl px-3.5 py-2 bg-slate-50/70">
+              <CalendarIcon className="w-4 h-4 text-slate-500" />
+              <input 
+                type="date" 
+                value={startDate}
+                onChange={(e) => {
+                  setActivePreset("CUSTOM")
+                  setStartDate(e.target.value)
+                }}
+                className="bg-transparent text-xs sm:text-sm focus:outline-none text-slate-700 font-medium"
+              />
+              <span className="text-slate-400 font-bold">-</span>
+              <input 
+                type="date" 
+                value={endDate}
+                onChange={(e) => {
+                  setActivePreset("CUSTOM")
+                  setEndDate(e.target.value)
+                }}
+                className="bg-transparent text-xs sm:text-sm focus:outline-none text-slate-700 font-medium"
+              />
+            </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 
@@ -338,22 +465,23 @@ export function ReportsBoard({ staffUsers }: { staffUsers: StaffUser[] }) {
           </span>
         </div>
 
-        <div className="flex items-center gap-2.5 self-start lg:self-center">
-          <button 
-            onClick={openAddModal}
-            className="flex items-center space-x-2 bg-gradient-to-r from-[#103D6D] to-[#1F77C5] hover:from-[#0B2545] hover:to-[#155b99] text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-md shadow-blue-500/20 active:scale-[0.98]"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Tambah Manual</span>
-          </button>
-          <button 
-            onClick={handleExport}
-            disabled={isLoading}
-            className="flex items-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all disabled:opacity-50 shadow-md shadow-emerald-500/20 active:scale-[0.98]"
-          >
-            <Download className="w-4 h-4" />
-            <span>Export Excel</span>
-          </button>
+          <div className="flex items-center gap-2.5 self-start lg:self-center">
+            <button 
+              onClick={openAddModal}
+              className="flex items-center space-x-2 bg-gradient-to-r from-[#103D6D] to-[#1F77C5] hover:from-[#0B2545] hover:to-[#155b99] text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-md shadow-blue-500/20 active:scale-[0.98]"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tambah Manual</span>
+            </button>
+            <button 
+              onClick={handleExport}
+              disabled={isLoading}
+              className="flex items-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all disabled:opacity-50 shadow-md shadow-emerald-500/20 active:scale-[0.98]"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export Excel</span>
+            </button>
+          </div>
         </div>
       </div>
 

@@ -80,34 +80,47 @@ export async function addOverrideAttendance(data: {
   return { success: true }
 }
 
-export async function getReportData(startDate: string, endDate: string) {
+export async function getReportData(startDate?: string, endDate?: string) {
   const session = await auth()
   if (session?.user?.role !== 'ADMIN') throw new Error("Unauthorized")
 
-  const start = new Date(startDate)
-  const end = new Date(endDate)
-  end.setHours(23, 59, 59, 999)
+  const dateFilter: any = {}
+  if (startDate) {
+    const s = new Date(startDate)
+    if (!isNaN(s.getTime())) dateFilter.gte = s
+  }
+  if (endDate) {
+    const e = new Date(endDate)
+    if (!isNaN(e.getTime())) {
+      e.setHours(23, 59, 59, 999)
+      dateFilter.lte = e
+    }
+  }
 
-  // Otomatis tandai ALPHA bagi pengguna aktif yang tidak presensi setelah jam kerja (17:00)
-  await syncAlphaAttendance(startDate, endDate)
+  const hasDateFilter = Object.keys(dateFilter).length > 0
+
+  // Otomatis tandai ALPHA bagi pengguna aktif yang tidak presensi setelah jam kerja jika rentang tanggal tersedia
+  if (startDate && endDate) {
+    await syncAlphaAttendance(startDate, endDate)
+  }
 
   const users = await db.user.findMany({
     where: {
       role: { not: 'GUEST' },
       OR: [
         { is_active: true },
-        { attendances: { some: { record_date: { gte: start, lte: end } } } }
+        hasDateFilter
+          ? { attendances: { some: { record_date: dateFilter } } }
+          : { attendances: { some: {} } }
       ]
     },
     include: {
       attendances: {
-        where: {
-          record_date: { gte: start, lte: end }
-        }
+        where: hasDateFilter ? { record_date: dateFilter } : undefined
       },
       overtimes: {
         where: {
-          request_date: { gte: start, lte: end },
+          ...(hasDateFilter ? { request_date: dateFilter } : {}),
           status: 'APPROVED'
         }
       }
@@ -169,42 +182,66 @@ export async function getReportData(startDate: string, endDate: string) {
   return report
 }
 
-export async function getRawAttendances(startDate: string, endDate: string) {
+export async function getRawAttendances(startDate?: string, endDate?: string) {
   const session = await auth()
   if (session?.user?.role !== 'ADMIN') throw new Error("Unauthorized")
 
-  const start = new Date(startDate)
-  const end = new Date(endDate)
-  end.setHours(23, 59, 59, 999)
+  const dateFilter: any = {}
+  if (startDate) {
+    const s = new Date(startDate)
+    if (!isNaN(s.getTime())) dateFilter.gte = s
+  }
+  if (endDate) {
+    const e = new Date(endDate)
+    if (!isNaN(e.getTime())) {
+      e.setHours(23, 59, 59, 999)
+      dateFilter.lte = e
+    }
+  }
+
+  const hasDateFilter = Object.keys(dateFilter).length > 0
 
   return await db.attendance.findMany({
-    where: { record_date: { gte: start, lte: end } },
+    where: hasDateFilter ? { record_date: dateFilter } : undefined,
     include: { user: { select: { full_name: true } } },
     orderBy: [{ record_date: 'desc' }, { clock_in: 'desc' }]
   })
 }
 
-export async function getDailyRecords(startDate: string, endDate: string) {
+export async function getDailyRecords(startDate?: string, endDate?: string) {
   const session = await auth()
   if (session?.user?.role !== 'ADMIN') throw new Error("Unauthorized")
 
-  const start = new Date(`${startDate}T00:00:00.000Z`)
-  const end = new Date(`${endDate}T23:59:59.999Z`)
+  const dateFilter: any = {}
+  if (startDate) {
+    const s = new Date(`${startDate}T00:00:00.000Z`)
+    if (!isNaN(s.getTime())) dateFilter.gte = s
+  }
+  if (endDate) {
+    const e = new Date(`${endDate}T23:59:59.999Z`)
+    if (!isNaN(e.getTime())) dateFilter.lte = e
+  }
 
-  // Otomatis tandai ALPHA bagi pengguna aktif yang tidak presensi setelah jam kerja (17:00)
-  await syncAlphaAttendance(startDate, endDate)
+  const hasDateFilter = Object.keys(dateFilter).length > 0
+
+  // Otomatis tandai ALPHA bagi pengguna aktif yang tidak presensi setelah jam kerja (17:00) jika tanggal tersedia
+  if (startDate && endDate) {
+    await syncAlphaAttendance(startDate, endDate)
+  }
 
   const users = await db.user.findMany({
     where: {
       role: { not: 'GUEST' },
       OR: [
         { is_active: true },
-        { attendances: { some: { record_date: { gte: start, lte: end } } } }
+        hasDateFilter
+          ? { attendances: { some: { record_date: dateFilter } } }
+          : { attendances: { some: {} } }
       ]
     },
     include: {
-      attendances: { where: { record_date: { gte: start, lte: end } } },
-      overtimes: { where: { request_date: { gte: start, lte: end } } }
+      attendances: { where: hasDateFilter ? { record_date: dateFilter } : undefined },
+      overtimes: { where: hasDateFilter ? { request_date: dateFilter } : undefined }
     }
   })
 
