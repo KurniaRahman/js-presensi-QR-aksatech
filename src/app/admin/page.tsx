@@ -47,7 +47,7 @@ export default async function AdminDashboardPage() {
 
   // Fetch Dashboard Stats, Latest Attendances, dan Sinkronisasi ALPHA secara paralel
   const [totalUsers, pendingOvertimes, todayAttendances, todayAlphas, recentAttendances] = await Promise.all([
-    db.user.count({ where: { is_active: true } }),
+    db.user.count({ where: { is_active: true, role: { not: 'GUEST' } } }),
     db.overtime.count({ where: { status: 'PENDING' } }),
     db.attendance.count({ 
       where: { 
@@ -171,7 +171,7 @@ export default async function AdminDashboardPage() {
             {totalUsers} <span className="text-xs font-bold text-slate-500 font-sans">Orang</span>
           </p>
           <div className="flex items-center justify-between pt-1 text-[11px] text-slate-400 group-hover:text-[#1F77C5] transition-colors font-medium">
-            <span>Kelola pengguna</span>
+            <span>Kelola karyawan</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
         </Link>

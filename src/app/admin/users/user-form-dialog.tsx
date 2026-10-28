@@ -134,7 +134,6 @@ export function UserFormDialog({
                 name="email" 
                 type="email" 
                 defaultValue={userToEdit?.email} 
-                disabled={!!userToEdit} 
                 required 
                 placeholder="Masukkan alamat email akun"
                 onInvalid={(e) => {
@@ -148,10 +147,10 @@ export function UserFormDialog({
                   }
                 }}
                 onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
-                className={`rounded-xl border-slate-200 text-sm ${userToEdit ? 'bg-slate-50 text-slate-500 font-mono' : 'focus:border-[#1F77C5]'}`}
+                className="rounded-xl border-slate-200 text-sm focus:border-[#1F77C5]"
               />
               {userToEdit && (
-                <p className="text-[11px] text-slate-400">Email akun tidak dapat diubah setelah terdaftar.</p>
+                <p className="text-[11px] text-slate-400">Pastikan alamat email aktif dan valid untuk kredensial login karyawan.</p>
               )}
             </div>
             
@@ -163,8 +162,7 @@ export function UserFormDialog({
                     {role === "ADMIN" ? "Admin" :
                      role === "PM" ? "Project Manager" :
                      role === "STAFF" ? "Engineer" :
-                     role === "MAGANG" ? "Magang" :
-                     role === "GUEST" ? "Guest" : role}
+                     role === "MAGANG" ? "Magang" : role}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="w-[var(--anchor-width)] min-w-[220px] rounded-2xl border-slate-200 shadow-xl bg-white p-1">
@@ -179,9 +177,6 @@ export function UserFormDialog({
                   </SelectItem>
                   <SelectItem value="MAGANG" className="rounded-lg text-sm font-medium cursor-pointer">
                     Magang
-                  </SelectItem>
-                  <SelectItem value="GUEST" className="rounded-lg text-sm font-medium cursor-pointer text-indigo-700">
-                    Guest
                   </SelectItem>
                 </SelectContent>
               </Select>

@@ -4,8 +4,8 @@ import Link from "next/link"
 import { Users, ArrowLeft, ShieldCheck, AlertCircle } from "lucide-react"
 
 export const metadata = {
-  title: "Manajemen Pengguna | HRIS Aksa Tech",
-  description: "Kelola data karyawan, hak akses, dan peran di dalam sistem HRIS PT Aksa Tech",
+  title: "Manajemen Karyawan | HRIS Aksa Tech",
+  description: "Kelola data karyawan internal, hak akses, dan peran di dalam sistem HRIS PT Aksa Tech",
 }
 
 export default async function AdminUsersPage() {
@@ -49,17 +49,17 @@ export default async function AdminUsersPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200/60">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  Administrator • Manajemen Pengguna
+                  Administrator • Manajemen Karyawan
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2.5">
                 <span className="p-2 rounded-2xl bg-gradient-to-br from-blue-50 to-sky-50 text-[#1F77C5] border border-blue-100/80 shadow-sm">
                   <Users className="w-6 h-6" />
                 </span>
-                Manajemen Pengguna & Akses
+                Manajemen Karyawan & Staf
               </h1>
               <p className="text-sm text-slate-500 max-w-2xl leading-relaxed">
-                Kelola akun karyawan, tentukan peran, serta kontrol status aktif/nonaktif untuk otorisasi sistem.
+                Kelola data karyawan internal PT Aksa Tech, tentukan peran jabatan, serta kontrol status aktif/nonaktif untuk otorisasi sistem.
               </p>
             </div>
 

@@ -8,6 +8,7 @@ import { Role } from "@prisma/client"
 export async function getUsers() {
   try {
     const users = await db.user.findMany({
+      where: { role: { not: 'GUEST' } },
       orderBy: { created_at: 'desc' },
       select: {
         id: true,
@@ -62,15 +63,28 @@ export async function createUser(formData: FormData) {
 export async function updateUser(id: string, formData: FormData) {
   try {
     const fullName = formData.get("fullName") as string
+    const email = (formData.get("email") as string)?.trim().toLowerCase()
     const role = formData.get("role") as Role
     const password = formData.get("password") as string
 
-    if (!fullName || !role) {
-      return { success: false, error: "Nama dan Role wajib diisi" }
+    if (!fullName || !email || !role) {
+      return { success: false, error: "Nama, Email, dan Role wajib diisi" }
+    }
+
+    // Cek apakah email baru sudah digunakan oleh pengguna lain
+    const existingUser = await db.user.findFirst({
+      where: {
+        email,
+        id: { not: id }
+      }
+    })
+    if (existingUser) {
+      return { success: false, error: "Email sudah terdaftar pada pengguna lain" }
     }
 
     const updateData: any = {
       full_name: fullName,
+      email,
       role,
     }
 

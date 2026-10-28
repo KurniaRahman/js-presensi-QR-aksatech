@@ -24,7 +24,6 @@ const getRoleLabel = (role: string) => {
     case "PM": return "Project Manager"
     case "MAGANG": return "Magang"
     case "STAFF": return "Engineer"
-    case "GUEST": return "Guest (External)"
     default: return role
   }
 }
@@ -206,7 +205,6 @@ export function UserTable({ users }: { users: User[] }) {
           <option value="PM">Project Manager (PM)</option>
           <option value="STAFF">Engineer</option>
           <option value="MAGANG">Magang</option>
-          <option value="GUEST">Guest (External)</option>
         </select>
       </div>
 
@@ -238,7 +236,7 @@ export function UserTable({ users }: { users: User[] }) {
       {/* Action Header Card */}
       <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm flex justify-between items-center flex-wrap gap-3">
         <div className="flex items-center space-x-2.5">
-          <h2 className="text-lg sm:text-xl font-bold text-slate-800">Daftar Akun Pengguna</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-slate-800">Daftar Karyawan</h2>
           <span className="text-xs bg-blue-50 text-[#1F77C5] font-bold px-2.5 py-0.5 rounded-full border border-blue-200/60">
             {filteredUsers.length} Total
           </span>
@@ -247,7 +245,7 @@ export function UserTable({ users }: { users: User[] }) {
           onClick={openAddForm} 
           className="bg-gradient-to-r from-[#103D6D] to-[#1F77C5] hover:from-[#0B2545] hover:to-[#155b99] text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-blue-500/20 active:scale-[0.98] transition-all"
         >
-          <Plus className="mr-1.5 h-4 w-4" /> Tambah Pengguna
+          <Plus className="mr-1.5 h-4 w-4" /> Tambah Karyawan
         </Button>
       </div>
 
@@ -256,7 +254,7 @@ export function UserTable({ users }: { users: User[] }) {
         <DataTable 
           columns={columns} 
           data={filteredUsers} 
-          searchPlaceholder="Cari nama atau email pengguna..."
+          searchPlaceholder="Cari nama atau email karyawan..."
           filterControls={filterControls}
         />
       </div>

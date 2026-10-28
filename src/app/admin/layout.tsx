@@ -1,7 +1,7 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { Sidebar } from "@/components/layout/sidebar"
-import { LayoutDashboard, Users, Clock, FileDown } from "lucide-react"
+import { LayoutDashboard, Users, Clock, FileDown, Building2 } from "lucide-react"
 import { SessionTimeoutWatcher } from "@/components/auth/session-timeout-watcher"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -14,7 +14,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const adminNavItems = [
     { name: "Dashboard", href: "/admin", icon: <LayoutDashboard className="h-5 w-5" /> },
     { name: "Scan Presensi", href: "/admin/scan", icon: <Clock className="h-5 w-5" /> },
-    { name: "Manajemen Pengguna", href: "/admin/users", icon: <Users className="h-5 w-5" /> },
+    { name: "Manajemen Karyawan", href: "/admin/users", icon: <Users className="h-5 w-5" /> },
+    { name: "Manajemen Klien", href: "/admin/clients", icon: <Building2 className="h-5 w-5" /> },
     { name: "Manajemen Lembur", href: "/admin/overtime", icon: <Clock className="h-5 w-5" /> },
     { name: "Laporan Absensi", href: "/admin/reports", icon: <FileDown className="h-5 w-5" /> },
   ]
